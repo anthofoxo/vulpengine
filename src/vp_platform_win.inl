@@ -1,3 +1,3 @@
 namespace vulpengine {
-	bool isWsl() { return false; }
+	bool is_wsl() { return false; }
 }

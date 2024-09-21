@@ -3,7 +3,7 @@
 #include <string_view>
 
 namespace vulpengine {
-	bool isWsl() {
+	bool is_wsl() {
 		utsname uname_info;
 		uname(&uname_info);
 

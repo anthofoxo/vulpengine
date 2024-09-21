@@ -1,5 +1,5 @@
 #pragma once
 
 namespace vulpengine {
-	bool isWsl();
+	bool is_wsl();
 }

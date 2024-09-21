@@ -1,68 +1,90 @@
 # Vulpengine
-Vulpengine is an experimental early-stage rendering engine for Windows and Linux. Vulpengine is a general toolset used to help myself develop my games.
+Vulpengine is an experimental early-stage rendering engine for Windows and Linux. Vulpengine is a general toolset developed by myself used to help myself develop games.
 
 ## Downloading the repo
-Vulpengine is designed to be used as a static library and submodule. Add Vulpengine to your submodule with `git submodule add https://github.com/anthofoxo/vulpengine your_submodule_path`.
+Vulpengine is designed to be used as a static library and git submodule. Add Vulpengine to your submodules with `git submodule add https://github.com/anthofoxo/vulpengine your_submodule_path`.
 
 ## Required Dependencies
 Vulpengine requires C++20 Support.
 
 Vulpengine requires the following dependencies.
 * [GLFW 3.4](https://github.com/glfw/glfw/tree/3.4)
-* [Glad](https://gen.glad.sh/#generator=c&api=gl%3D3.3&profile=gl%3Dcore%2Cgles1%3Dcommon)
-* * 3.3+ Core Profile
-
-## Optional Dependencies
-Vulpengine can optionally support these dependencies.
-* [spdlog v1.14.1](https://github.com/gabime/spdlog/tree/v1.14.1)
-* [Tracy v0.11.1](https://github.com/wolfpld/tracy/tree/v0.11.1)
+* [Glad](https://gen.glad.sh/#generator=c&api=gl%3D4.6&profile=gl%3Dcore%2Cgles1%3Dcommon) (OpenGL 4.6+)
 
 ## Building
 
 ### Include Paths
+Building Vulpengine is kept simple. Add `include/vulpengine` to the include paths and add the include paths for all the required libraries.
 * `include/vulpengine`
 * `glfw/include`
 * `glad/include`
 
+### Platforms
+Vulpengine supports Windows and Linux.
+* `#define VP_WINDOWS` for Windows builds.
+* `#define VP_LINUX` for Linux builds.
+
+### Configurations
+Vulpengine supports 3 different configurations. If you only have `debug` and `release` then you can use those.
+
+* For debug builds `#define VP_DEBUG`.
+* For release builds `#define VP_RELEASE`.
+* For dist builds `#define VP_DIST`.
+
+Dist is similar to release but with extra debugging tools stripped.
+
 ### Defines
-You should define `GLFW_INCLUDE_NONE` for Vulpengine.
+* You should define `GLFW_INCLUDE_NONE`.
+* Define `VP_ENTRY_WINMAIN` if you're using the `WinMain` entrypoint.
 
-Define `VP_ENTRY_WINMAIN` if you're using the `WinMain` entrypoint.
+## Optional Dependencies
 
-### Spdlog Support
-Vulpengine will detect and use spdlog if its in the include paths.
-Add `spdlog/include` to your include paths.
+### Spdlog
+Vulpengine supports [spdlog](https://github.com/gabime/spdlog/tree/v1.14.1). To enable spdlog support add `spdlog/include` to the include paths.
 
-### Tracy Support
-Vulpengine will detect and use tracy if its in the include paths.
-Add `tracy/public` to your include paths. Make sure to define `TRACY_ENABLE` too.
+### Tracy
+Vulpengine can detect and use [Tracy](https://github.com/wolfpld/tracy/tree/v0.11.1) if available.
 
-## Using
-Once Vulpengine is built. Simply add the `include` directory to your include paths.
+Add `tracy/public` to your include paths. Make sure to `#define TRACY_ENABLE` too.
 
-All Vulpengine headers are prefixed with `vp_` so you may directly add `include/vulpengine` if you like.
+### RenderDoc (Experimental)
+Vulpengine can support [RenderDoc](https://renderdoc.org/) detection. RenderDoc installations include `renderdoc_app.h` in the installation directory. Add this directory to the include paths for Vulpengine to detect and enable support for it.
 
-Vulpengine will define the main function, thus you can't use it. This is mainly to cleanly handle `WinMain` and certain allocations. Vulpengine otherwise will forward everything to its main function.
+The code below shows how to detect RenderDoc. The parameter may be set to `true` to attempt to inject RenderDoc. While this does works currently, it *IS NOT SUPPORTED* by the RenderDoc developers.
+```cpp
+#include <vulpengine/experimental/vp_rdoc.hpp>
+
+// Do this before graphics api creation
+vulpengine::experimental::rdoc::setup(false);
+```
+
+## General Usage
+Once Vulpengine is built. Simply add our `include` directory to your include paths.
+
+All Vulpengine headers are prefixed with `vp_` to avoid name clashes. You may directly add `include/vulpengine` if you like.
+
+## Entry Point / Main Function
+Vulpengine will define the main entrypoint, so you can't directly use that. This is mainly to perform some backend work to ensure logging will work.
+
+Otherwise no other processing happens and the argments are directly forwarded to the Vulpengine entry point.
 
 ```cpp
-#include "vulpengine/vp_entry.hpp"
+#include <vulpengine/vp_entry.hpp>
 
 int vulpengine::main(int argc, char* argv[]) {
 	return 0;
 }
 ```
 
-## The `Wrap` Struct
+## Wrap (Experimental)
+Wrap is a simply box type to get around some odd reference semantics when using value types such as `std::optional` and `std::span`.
+
 Wrap is simply defined as:
 ```cpp
 template<class T> struct Wrap { T value; };
 ```
 
-This wrapper is used to get around some type issues related to references, in particular when combined with value container types such as `std::optional` and `std::span`.
-
-`std::reference_wrapper` may be a good choice but this hasn't been tested.
-
-Some utility functions are defined to assist in handling wrapping reference types.
+These utility functions help to easily assist in wrapping reference types.
 
 ### `wrap_cref`
 This takes a reference type and wraps the reference.
@@ -71,11 +93,10 @@ This takes a reference type and wraps the reference.
 This should be treated like a `std::move`.
 This performs a `std::move` on the argument and stores the rvalue reference into the wrapper. This is used during resource transfer into Meshes.
 
-## Experimental Mesh API
+## Mesh API (Experimental)
 Meshes are split into 3 parts. Buffers, Vertex Arrays, and Meshes.
-Buffers are just OpenGL buffers: Array buffers, element Buffers, uniform buffers etc. Vertex arrays are OpenGL vertex arrays. These are constructed with a list of buffers and a list of attributes. Meshes are simple owning containers for these resources.
+Buffers are just OpenGL buffers: Array buffers, element buffers, uniform buffers etc. Vertex arrays are OpenGL vertex arrays. These are constructed with a list of buffers and a list of attributes. Meshes are simple containers to transfer ownership of these resources.
 
-### Usage
 For the example usage assume we have these structs defined:
 ```cpp
 struct Vec3f32 final {
@@ -87,7 +108,7 @@ struct Vertex final {
 };
 ```
 
-### Create a Buffer and Upload Vertex Data
+### Buffer (Experimental)
 ```cpp
 Vertex positions[] = {
 	{ -0.5f, -0.5f },
@@ -102,7 +123,7 @@ vulpengine::experimental::Buffer vertexBuffer = {{
 }};
 ```
 
-### Create a Vertex Array with the Buffer and Attributes
+### Vertex Array (Experimental)
 ```cpp
 vulpengine::experimental::VertexArray vertexArray = {{
 	.buffers = std::array {
@@ -128,7 +149,7 @@ vulpengine::experimental::VertexArray vertexArray = {{
 ```
 
 ### Transfer Ownership into a Mesh
-You'll typically want to transfer all static data into the Mesh however the Mesh doesn't require ownership of buffers.
+You'll typically want to transfer all static data into the Mesh, however the Mesh doesn't require ownership of buffers.
 
 ```cpp
 vulpengine::experimental::Mesh mesh = {{
