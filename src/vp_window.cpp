@@ -29,7 +29,7 @@ namespace vulpengine {
 		if (!gWindowCount) {
 			glfwSetErrorCallback(&errorCallback);
 
-			if (isWsl())
+			if (is_wsl())
 				glfwInitHint(GLFW_PLATFORM, GLFW_PLATFORM_X11);
 
 			if (!glfwInit()) return;

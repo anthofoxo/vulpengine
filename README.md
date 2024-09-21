@@ -24,6 +24,9 @@ Vulpengine supports Windows and Linux.
 * `#define VP_WINDOWS` for Windows builds.
 * `#define VP_LINUX` for Linux builds.
 
+#### Linux
+If you're building GLFW yourself you will need to generate the xdg headers for wayland. We've bundled a small tool for this `glfw_generate_xdg.sh`.
+
 ### Configurations
 Vulpengine supports 3 different configurations. If you only have `debug` and `release` then you can use those.
 
