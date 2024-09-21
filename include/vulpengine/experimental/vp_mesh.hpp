@@ -22,7 +22,9 @@ namespace vulpengine::experimental {
 		constexpr Mesh() noexcept = default;
 		Mesh(CreateInfo const& info);
 
-		void draw() const;
+		void draw(GLsizei count = 0) const;
+
+		inline GLsizei count() const { return mCount; }
 	private:
 		VertexArray mVertexArray;
 		std::vector<Buffer> mBuffers;

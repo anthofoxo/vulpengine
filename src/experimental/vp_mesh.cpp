@@ -1,7 +1,12 @@
 #include "experimental/vp_mesh.hpp"
 
+#include <cassert>
+
 namespace vulpengine::experimental {
-	Mesh::Mesh(CreateInfo const& info) {
+	Mesh::Mesh(CreateInfo const& info) : mMode(info.mode), mCount(info.count), mType(info.type) {
+		assert(info.vertexArray.valid());
+		assert(info.count > 0);
+
 		mVertexArray = std::move(info.vertexArray);
 
 		mBuffers.reserve(info.buffers.size());
@@ -9,15 +14,13 @@ namespace vulpengine::experimental {
 		for (auto& buffer : info.buffers) {
 			mBuffers.emplace_back(std::move(buffer.value));
 		}
-
-		mMode = info.mode;
-		mCount = info.count;
-		mType = info.type;
 	}
 
-	void Mesh::draw() const {
+	void Mesh::draw(GLsizei count) const {
+		if (count == 0) count = mCount;
+
 		mVertexArray.bind();
-		if (mType != GL_NONE) glDrawElements(mMode, mCount, mType, nullptr);
-		else glDrawArrays(mMode, 0, mCount);
+		if (mType != GL_NONE) glDrawElements(mMode, count, mType, nullptr);
+		else glDrawArrays(mMode, 0, count);
 	}
 }

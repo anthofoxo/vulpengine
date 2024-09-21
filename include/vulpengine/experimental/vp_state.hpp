@@ -28,6 +28,10 @@ namespace vulpengine::experimental {
 			assert(mState);
 			mState->update();
 		}
+
+		inline void reset() {
+			mState = nullptr;
+		}
 	private:
 		std::unique_ptr<State> mState;
 	};

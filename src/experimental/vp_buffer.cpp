@@ -12,7 +12,7 @@ namespace vulpengine::experimental {
 		glNamedBufferStorage(mHandle, info.content.size_bytes(), info.content.data(), info.flags);
 
 		if (!info.label.empty()) {
-			glObjectLabel(GL_BUFFER, mHandle, info.label.size(), info.label.data());
+			glObjectLabel(GL_BUFFER, mHandle, static_cast<GLsizei>(info.label.size()), info.label.data());
 		}
 
 		VP_LOG_TRACE("Created buffer: {}", mHandle);

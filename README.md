@@ -51,3 +51,97 @@ int vulpengine::main(int argc, char* argv[]) {
 	return 0;
 }
 ```
+
+## The `Wrap` Struct
+Wrap is simply defined as:
+```cpp
+template<class T> struct Wrap { T value; };
+```
+
+This wrapper is used to get around some type issues related to references, in particular when combined with value container types such as `std::optional` and `std::span`.
+
+`std::reference_wrapper` may be a good choice but this hasn't been tested.
+
+Some utility functions are defined to assist in handling wrapping reference types.
+
+### `wrap_cref`
+This takes a reference type and wraps the reference.
+
+### `wrap_rvref`
+This should be treated like a `std::move`.
+This performs a `std::move` on the argument and stores the rvalue reference into the wrapper. This is used during resource transfer into Meshes.
+
+## Experimental Mesh API
+Meshes are split into 3 parts. Buffers, Vertex Arrays, and Meshes.
+Buffers are just OpenGL buffers: Array buffers, element Buffers, uniform buffers etc. Vertex arrays are OpenGL vertex arrays. These are constructed with a list of buffers and a list of attributes. Meshes are simple owning containers for these resources.
+
+### Usage
+For the example usage assume we have these structs defined:
+```cpp
+struct Vec3f32 final {
+	float x, y;
+};
+
+struct Vertex final {
+	Vec3f32 position;
+};
+```
+
+### Create a Buffer and Upload Vertex Data
+```cpp
+Vertex positions[] = {
+	{ -0.5f, -0.5f },
+	{  0.5f, -0.5f },
+	{  0.0f,  0.5f }
+};
+
+vulpengine::experimental::Buffer vertexBuffer = {{
+	.content = std::as_bytes(std::span(positions)),
+	.flags = GL_NONE,
+	.label = "Test vertex buffer" // May be omitted
+}};
+```
+
+### Create a Vertex Array with the Buffer and Attributes
+```cpp
+vulpengine::experimental::VertexArray vertexArray = {{
+	.buffers = std::array {
+		vulpengine::experimental::VertexArray::BufferInfo {
+			.buffer = vertexBuffer,
+			.offset = 0,
+			.stride = sizeof(Vertex),
+			.divisor = 0
+		}
+	},
+	.attributes = std::array {
+		vulpengine::experimental::VertexArray::AttributeInfo {
+			.size = 2,
+			.type = GL_FLOAT,
+			.relativeoffset = offsetof(Vertex, position),
+			.bindingindex = 0,
+		}
+	},
+	// Optionally attach an index buffer
+	// .indexBuffer = vulpengine::experimental::wrap_cref(indexBuffer),
+	.label = "Test vertex array"
+}};
+```
+
+### Transfer Ownership into a Mesh
+You'll typically want to transfer all static data into the Mesh however the Mesh doesn't require ownership of buffers.
+
+```cpp
+vulpengine::experimental::Mesh mesh = {{
+	// usage of std::move is required, this hints to the developer that this takes ownership
+	.vertexArray = std::move(vertexArray),
+	.buffers = std::array {
+		// wrap_rvref
+		vulpengine::experimental::wrap_rvref(vertexBuffer),
+		vulpengine::experimental::wrap_rvref(indexBuffer),
+	},
+	.mode = GL_TRIANGLES,
+	.count = 3,
+	// May be omitted or `GL_NONE` if no index buffer is used.
+	.type = GL_UNSIGNED_INT
+}};
+```

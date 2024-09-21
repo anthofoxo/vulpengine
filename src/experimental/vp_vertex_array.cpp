@@ -31,7 +31,7 @@ namespace vulpengine::experimental {
 
 
 		if (!info.label.empty()) {
-			glObjectLabel(GL_VERTEX_ARRAY, mHandle, info.label.size(), info.label.data());
+			glObjectLabel(GL_VERTEX_ARRAY, mHandle, static_cast<GLsizei>(info.label.size()), info.label.data());
 		}
 
 		VP_LOG_TRACE("Created vertex array: {}", mHandle);
