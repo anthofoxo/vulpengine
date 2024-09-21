@@ -1,13 +1,11 @@
 #pragma once
 
-#if defined(__has_include) && __has_include(<tracy/Tracy.hpp>)
+#include "vp_features.hpp"
+
+#ifdef VP_HAS_TRACY
 #	include <glad/gl.h>
 #	include <tracy/Tracy.hpp>
 #	include <tracy/TracyOpenGL.hpp>
-#	define VP_HAS_TRACY
-#endif
-
-#ifdef VP_HAS_TRACY
 #	define VP_PROFILE_GPU_CONTEXT TracyGpuContext
 #	define VP_PROFILE_CPU ZoneScoped
 #	define VP_PROFILE_GPU TracyGpuZone(TracyFunction)

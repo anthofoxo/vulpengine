@@ -1,5 +1,6 @@
 #pragma once
 
+#include "vp_features.hpp"
 #include "vp_image.hpp"
 
 #include <glad/gl.h>

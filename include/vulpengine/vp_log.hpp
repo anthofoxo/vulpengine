@@ -1,8 +1,6 @@
 #pragma once
 
-#if defined(__has_include) && __has_include(<spdlog/spdlog.h>)
-#	define VP_HAS_SPDLOG
-#endif
+#include "vp_features.hpp"
 
 #ifdef VP_HAS_SPDLOG
 #	include <spdlog/spdlog.h>

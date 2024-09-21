@@ -1,8 +1,6 @@
 #pragma once
 
-#if defined(__has_include) && __has_include(<stb_image.h>)
-#	define VP_HAS_STB_IMAGE
-#endif
+#include "vp_features.hpp"
 
 #ifdef VP_HAS_STB_IMAGE
 

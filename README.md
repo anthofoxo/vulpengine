@@ -61,6 +61,12 @@ The code below shows how to detect RenderDoc. The parameter may be set to `true`
 vulpengine::experimental::rdoc::setup(false);
 ```
 
+## stb_image
+If stb_image is available the `Image` class will be available along with helper functions for `Texture` creation and upload.
+
+# glm
+If glm is available, the `Transform` class will be defined.
+
 ## General Usage
 Once Vulpengine is built. Simply add our `include` directory to your include paths.
 
