@@ -18,4 +18,8 @@
 #	define VP_HAS_STB_IMAGE
 #endif
 
+#if __has_include(<stb_include.h>)
+#	define VP_HAS_STB_INCLUDE
+#endif
+
 #endif // __has_include
