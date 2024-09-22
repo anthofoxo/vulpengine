@@ -50,12 +50,14 @@ Vulpengine can detect and use [Tracy](https://github.com/wolfpld/tracy/tree/v0.1
 
 Add `tracy/public` to your include paths. Make sure to `#define TRACY_ENABLE` too.
 
-### RenderDoc (Experimental)
+### RenderDoc
 Vulpengine can support [RenderDoc](https://renderdoc.org/) detection. RenderDoc installations include `renderdoc_app.h` in the installation directory. Add this directory to the include paths for Vulpengine to detect and enable support for it.
 
-The code below shows how to detect RenderDoc. The parameter may be set to `true` to attempt to inject RenderDoc. While this does works currently, it *IS NOT SUPPORTED* by the RenderDoc developers.
+The code below shows how to detect RenderDoc.
+
+If enabled with `VP_FEATURE_RDOC_UNSUPPORTED` the parameter may be set to `true` to attempt to inject RenderDoc at startup. While this does works currently, it *IS NOT SUPPORTED* by the RenderDoc developers and may break.
 ```cpp
-#include <vulpengine/experimental/vp_rdoc.hpp>
+#include <vulpengine/vp_rdoc.hpp>
 
 // Do this before graphics api creation
 vulpengine::experimental::rdoc::setup(false);

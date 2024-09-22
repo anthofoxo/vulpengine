@@ -6,13 +6,14 @@
 namespace vulpengine::experimental::rdoc {
 	void setup(bool load) {
 		HMODULE library = GetModuleHandleA("renderdoc.dll");
-
-		// This method of attaching IS NOT SUPPORTED by the RenderDoc developers.
+		
+#ifdef VP_FEATURE_RDOC_UNSUPPORTED
 		if (load && library == nullptr) {
 			CHAR pf[MAX_PATH];
 			SHGetSpecialFolderPathA(nullptr, pf, CSIDL_PROGRAM_FILES, false);
 			library = LoadLibraryA(std::format("{}/RenderDoc/renderdoc.dll", pf).c_str());
 		}
+#endif // VP_FEATURE_RDOC_UNSUPPORTED
 
 		if (library == nullptr) return;
 

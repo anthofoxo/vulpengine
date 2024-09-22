@@ -1,4 +1,4 @@
-#include "experimental/vp_rdoc.hpp"
+#include "vp_rdoc.hpp"
 
 #if defined(__has_include) && __has_include(<renderdoc_app.h>)
 #	define VP_HAS_RDOC
