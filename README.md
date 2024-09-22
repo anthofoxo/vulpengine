@@ -65,7 +65,7 @@ vulpengine::experimental::rdoc::setup(false);
 If stb_image is available the `Image` class will be available along with helper functions for `Texture` creation and upload.
 
 # glm
-If glm is available, the `Transform` class will be defined.
+If glm is available, the `Transform` and `Frustum` features will be enabled.
 
 ## General Usage
 Once Vulpengine is built. Simply add our `include` directory to your include paths.
