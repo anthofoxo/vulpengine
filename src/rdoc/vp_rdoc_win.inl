@@ -3,7 +3,7 @@
 
 #include <format>
 
-namespace vulpengine::experimental::rdoc {
+namespace vulpengine::rdoc {
 	void setup(bool load) {
 		HMODULE library = GetModuleHandleA("renderdoc.dll");
 		

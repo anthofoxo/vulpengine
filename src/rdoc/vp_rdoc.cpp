@@ -20,7 +20,7 @@ namespace {
 #	include "vp_rdoc_linux.inl"
 #endif
 
-namespace vulpengine::experimental::rdoc {
+namespace vulpengine::rdoc {
 	bool is_attached() {
 		return gApi;
 	}

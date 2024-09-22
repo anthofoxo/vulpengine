@@ -1,6 +1,6 @@
 #include <dlfcn.h>
 
-namespace vulpengine::experimental::rdoc {
+namespace vulpengine::rdoc {
 	void setup(bool load) {
 		void* library = dlopen("librenderdoc.so", RTLD_NOW | RTLD_NOLOAD);
 #ifdef VP_FEATURE_RDOC_UNSUPPORTED
