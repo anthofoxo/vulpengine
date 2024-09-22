@@ -4,6 +4,12 @@
 
 #ifdef VP_HAS_STB_INCLUDE
 
+#ifdef VP_HAS_GLM
+#	include <glm/glm.hpp>
+#endif
+
+#include "vp_types.hpp"
+
 #include <glad/gl.h>
 
 #include <utility>
@@ -16,7 +22,7 @@ namespace vulpengine::experimental {
 			char const* includePath = "./";
 		};
 
-		constexpr ShaderProgram() noexcept = default;
+		ShaderProgram() noexcept = default;
 		ShaderProgram(CreateInfo const& info);
 		ShaderProgram(ShaderProgram const&) = delete;
 		ShaderProgram& operator=(ShaderProgram const&) = delete;
@@ -25,12 +31,20 @@ namespace vulpengine::experimental {
 		~ShaderProgram() noexcept;
 
 		void bind() const;
+		GLint get_uniform_location(std::string_view name) const;
+
+		void push_mat4f(std::string_view name, float const* v0) const;
+
+#ifdef VP_HAS_GLM
+		void push_mat4f(std::string_view name, glm::mat4 const& v0) const;
+#endif
 
 		inline explicit operator bool() const { return mHandle; }
 		inline bool valid() const { return mHandle; }
 		inline GLuint handle() const { return mHandle; }
 	private:
 		GLuint mHandle = 0;
+		UnorderedStringMap<int> mActiveUniforms;
 	};
 }
 #endif // VP_HAS_STB_INCLUDE

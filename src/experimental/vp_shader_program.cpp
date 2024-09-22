@@ -6,6 +6,10 @@
 
 #include <stb_include.h>
 
+#ifdef VP_HAS_GLM
+#	include <glm/gtc/type_ptr.hpp>
+#endif
+
 #include <memory>
 #include <format>
 #include <cstdlib> // free
@@ -14,7 +18,11 @@ namespace {
 	std::unique_ptr<char, decltype(&free)> preprocessShader(char const* file, char const* inject, char const* includePath) {
 		char error[256]; // stb_include_file expects this to be 256
 		memset(error, 0, sizeof(error));
-		std::unique_ptr<char, decltype(&free)> source = { stb_include_file(file, inject, includePath, error), &free};
+#ifdef VP_FEATURE_STB_INCLUDE_COMPAT
+		std::unique_ptr<char, decltype(&free)> source = { stb_include_file((char*)file, (char*)inject, (char*)includePath, error), &free };
+#else
+		std::unique_ptr<char, decltype(&free)> source = { stb_include_file(file, inject, includePath, error), &free };
+#endif
 		if (!source) VP_LOG_ERROR("Shader preprocessor error in {}: {}", file, error);
 		return source;
 	}
@@ -153,10 +161,34 @@ namespace vulpengine::experimental {
 
 		if (mHandle)
 			VP_LOG_TRACE("Created shader program: {}", mHandle);
+
+		if (!mHandle) return;
+
+		// Do introspection
+
+		GLint activeUniforms;
+		GLint maxUniformNameLength;
+		glGetProgramInterfaceiv(mHandle, GL_UNIFORM, GL_ACTIVE_RESOURCES, &activeUniforms);
+		glGetProgramInterfaceiv(mHandle, GL_UNIFORM, GL_MAX_NAME_LENGTH, &maxUniformNameLength);
+
+		std::unique_ptr<char[]> uniformNameBuffer = std::make_unique<char[]>(maxUniformNameLength);
+
+		for (int i = 0; i < activeUniforms; ++i) {
+			GLsizei length;
+			glGetProgramResourceName(mHandle, GL_UNIFORM, i, maxUniformNameLength, &length, uniformNameBuffer.get());
+			std::string_view name(uniformNameBuffer.get(), length);
+
+			std::array<GLenum, 1> properties = { GL_LOCATION };
+			GLint location;
+			glGetProgramResourceiv(mHandle, GL_UNIFORM, i, static_cast<GLsizei>(properties.size()), properties.data(), 1, nullptr, &location);
+
+			if (location != -1) mActiveUniforms[std::string(name)] = location;
+		}
 	}
 
 	ShaderProgram& ShaderProgram::operator=(ShaderProgram&& other) noexcept {
 		std::swap(mHandle, other.mHandle);
+		std::swap(mActiveUniforms, other.mActiveUniforms);
 		return *this;
 	}
 
@@ -170,6 +202,20 @@ namespace vulpengine::experimental {
 	void ShaderProgram::bind() const {
 		glUseProgram(mHandle);
 	}
+
+	GLint ShaderProgram::get_uniform_location(std::string_view name) const {
+		auto it = mActiveUniforms.find(name);
+		if (it == mActiveUniforms.end()) return -1;
+		return it->second;
+	}
+
+	void ShaderProgram::push_mat4f(std::string_view name, float const* v0) const {
+		glProgramUniformMatrix4fv(mHandle, get_uniform_location(name), 1, GL_FALSE, v0);
+	}
+
+#ifdef VP_HAS_GLM
+	void ShaderProgram::push_mat4f(std::string_view name, glm::mat4 const& v0) const { push_mat4f(name, glm::value_ptr(v0)); }
+#endif
 }
 
 #endif // VP_HAS_STB_INCLUDE
