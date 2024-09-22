@@ -17,6 +17,8 @@ namespace vulpengine::experimental {
 	}
 
 	void Mesh::draw(GLsizei count) const {
+		if (!mVertexArray.valid()) return;
+
 		if (count == 0) count = mCount;
 
 		mVertexArray.bind();
