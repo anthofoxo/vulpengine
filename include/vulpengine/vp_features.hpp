@@ -2,6 +2,10 @@
 
 #ifdef __has_include
 
+#if __has_include(<GLFW/glfw3.h>)
+#	define VP_HAS_GLFW
+#endif
+
 #if __has_include(<glm/glm.hpp>)
 #	define VP_HAS_GLM
 #endif

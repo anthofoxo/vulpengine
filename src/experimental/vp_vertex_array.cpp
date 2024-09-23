@@ -1,6 +1,6 @@
 #include "experimental/vp_vertex_array.hpp"
 
-#include "vp_log.hpp"
+#include <cassert>
 
 namespace vulpengine::experimental {
 	VertexArray::VertexArray(CreateInfo const& info) {
@@ -33,8 +33,6 @@ namespace vulpengine::experimental {
 		if (!info.label.empty()) {
 			glObjectLabel(GL_VERTEX_ARRAY, mHandle, static_cast<GLsizei>(info.label.size()), info.label.data());
 		}
-
-		VP_LOG_TRACE("Created vertex array: {}", mHandle);
 	}
 
 	VertexArray& VertexArray::operator=(VertexArray&& other) noexcept {
@@ -44,7 +42,6 @@ namespace vulpengine::experimental {
 
 	VertexArray::~VertexArray() noexcept {
 		if (mHandle) {
-			VP_LOG_TRACE("Destroyed vertex array: {}", mHandle);
 			glDeleteVertexArrays(1, &mHandle);
 		}
 	}

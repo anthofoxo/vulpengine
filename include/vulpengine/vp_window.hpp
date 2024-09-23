@@ -1,5 +1,9 @@
 #pragma once
 
+#include "vp_features.hpp"
+
+#ifdef VP_HAS_GLFW
+
 #include <utility> // std::move
 
 // Forward declare; Avoid including entire GLFW header
@@ -36,3 +40,4 @@ namespace vulpengine {
 		GLFWwindow* mHandle = nullptr;
 	};
 }
+#endif // VP_HAS_GLFW

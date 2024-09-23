@@ -24,6 +24,7 @@ namespace vulpengine::experimental {
 
 		void draw(GLsizei count = 0) const;
 
+		inline bool valid() const { return mVertexArray.valid(); }
 		inline GLsizei count() const { return mCount; }
 	private:
 		VertexArray mVertexArray;

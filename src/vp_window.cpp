@@ -1,5 +1,7 @@
 #include "vp_window.hpp"
 
+#ifdef VP_HAS_GLFW
+
 #include "vp_platform.hpp"
 #include "vp_profile.hpp"
 #include "vp_log.hpp"
@@ -97,3 +99,4 @@ namespace vulpengine {
 		return gladLoadGL(&glfwGetProcAddress);
 	}
 }
+#endif // VP_HAS_GLFW
