@@ -33,9 +33,14 @@ namespace vulpengine::experimental {
 		void bind() const;
 		GLint get_uniform_location(std::string_view name) const;
 
+		void push_vec4f(std::string_view name, float const* v0) const;
+		void push_vec4f(std::string_view name, float v0, float v1, float v2, float v3) const;
+
 		void push_mat4f(std::string_view name, float const* v0) const;
 
 #ifdef VP_HAS_GLM
+		void push_vec4f(std::string_view name, glm::vec4 const& v0) const;
+
 		void push_mat4f(std::string_view name, glm::mat4 const& v0) const;
 #endif
 

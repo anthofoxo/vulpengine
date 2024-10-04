@@ -5,6 +5,8 @@
 
 #include <glad/gl.h>
 
+#include <array>
+
 namespace vulpengine::experimental {
 	class Texture final {
 	public:
@@ -15,6 +17,7 @@ namespace vulpengine::experimental {
 			GLint minFilter = GL_LINEAR;
 			GLint magFilter = GL_LINEAR;
 			GLint wrap = GL_CLAMP_TO_EDGE;
+			std::array<float, 4> border{ 1.0f, 1.0f, 1.0f, 1.0f };
 
 #ifdef VP_HAS_STB_IMAGE
 			CreateInfo& with_image(Image const& image);

@@ -10,7 +10,7 @@ namespace vulpengine::experimental {
 	class Buffer final {
 	public:
 		struct CreateInfo final {
-			std::span<const std::byte> content;
+			std::span<std::byte const> content;
 			GLbitfield flags = GL_NONE;
 			std::string_view label;
 		};

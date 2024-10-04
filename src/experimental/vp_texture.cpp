@@ -15,8 +15,6 @@ namespace vulpengine::experimental {
 	}
 
 	Texture::UploadInfo& Texture::UploadInfo::with_image(Image const& image) {
-		xoffset = 0;
-		yoffset = 0;
 		width = image.width();
 		height = image.height();
 		format = GL_RGBA;
@@ -39,6 +37,7 @@ namespace vulpengine::experimental {
 		glTextureParameteri(mHandle, GL_TEXTURE_MAG_FILTER, info.magFilter);
 		glTextureParameteri(mHandle, GL_TEXTURE_WRAP_S, info.wrap);
 		glTextureParameteri(mHandle, GL_TEXTURE_WRAP_T, info.wrap);
+		glTextureParameterfv(mHandle, GL_TEXTURE_BORDER_COLOR, info.border.data());
 
 		VP_LOG_TRACE("Created texture: {}", mHandle);
 	}
