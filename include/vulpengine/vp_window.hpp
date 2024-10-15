@@ -6,7 +6,8 @@
 
 #include <utility> // std::move
 
-// Forward declare; Avoid including entire GLFW header
+// Forward declare
+// Avoid including entire GLFW header
 extern "C" typedef struct GLFWwindow GLFWwindow;
 
 namespace vulpengine {
@@ -35,7 +36,7 @@ namespace vulpengine {
 		void make_context_current() const;
 
 		static void poll_events();
-		static bool loadGl();
+		static bool load_gl();
 	private:
 		GLFWwindow* mHandle = nullptr;
 	};

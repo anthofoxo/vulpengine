@@ -16,6 +16,12 @@
 
 #include <cstdint>
 
+#define VP_MAKE_VERSION(major, minor, revision) (major * 1000 + minor * 100 + revision)
+
+#if VP_MAKE_VERSION(GLFW_VERSION_MAJOR, GLFW_VERSION_MINOR, GLFW_VERSION_REVISION) < 3400
+#	error GLFW 3.4+ is required
+#endif
+
 namespace {
 	uint_fast16_t gWindowCount = 0;
 
@@ -94,7 +100,7 @@ namespace vulpengine {
 		glfwPollEvents();
 	}
 
-	bool Window::loadGl() {
+	bool Window::load_gl() {
 		VP_PROFILE_CPU;
 		return gladLoadGL(&glfwGetProcAddress);
 	}

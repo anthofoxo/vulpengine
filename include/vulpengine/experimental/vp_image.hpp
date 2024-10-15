@@ -10,7 +10,7 @@ namespace vulpengine::experimental {
 	class Image final {
 	public:
 		constexpr Image() noexcept = default;
-		Image(char const* filename);
+		Image(char const* filename, bool flip = true);
 		Image(Image const&) = delete;
 		Image& operator=(Image const&) = delete;
 		inline Image(Image&& other) noexcept { *this = std::move(other); }

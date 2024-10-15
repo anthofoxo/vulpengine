@@ -24,4 +24,16 @@ namespace vulpengine::experimental {
 			glDeleteBuffers(1, &mHandle);
 		}
 	}
+
+	void Buffer::bind_base(GLenum target, GLuint index) const {
+		glBindBufferBase(target, index, mHandle);
+	}
+
+	void Buffer::upload(GLintptr offset, std::span<std::byte const> data) const {
+		upload(offset, data.size_bytes(), data.data());
+	}
+
+	void Buffer::upload(GLintptr offset, GLsizeiptr size, void const* data) const {
+		glNamedBufferSubData(mHandle, offset, size, data);
+	}
 }

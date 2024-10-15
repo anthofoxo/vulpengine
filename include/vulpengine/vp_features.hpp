@@ -1,5 +1,15 @@
 #pragma once
 
+/*! VulpEngine feature testing
+
+VulpEngine optionally supports many libraries
+If VulpEngine can see the headers, it'll enable them
+
+Todo: Refactor feature macros:
+- VP_LIB_<library_name> should be used to indicate if a library is available
+- VP_HAS_<vulpengine_type> should be used to indicate if a specific structure is available
+*/
+
 #ifdef __has_include
 
 #if __has_include(<GLFW/glfw3.h>)

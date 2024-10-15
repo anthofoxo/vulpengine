@@ -2,6 +2,14 @@
 
 #include "vp_transform.hpp"
 
+#include <vector>
+#include <cstddef>
+#include <optional>
+#include <string>
+#include <string_view>
+#include <unordered_map>
+#include <filesystem>
+
 namespace vulpengine::helpers {
 #ifdef VP_HAS_GLM
 	// Handles moving a first person free move camera by modifying a Transform
@@ -29,4 +37,18 @@ namespace vulpengine::helpers {
 	// ```
 	Transform freecam(Transform const& transform, glm::vec3 const& movement, glm::vec2 const& rotation);
 #endif
+}
+
+namespace vulpengine {
+	struct StringMultiHash final {
+		using hash_type = std::hash<std::string_view>;
+		using is_transparent = void;
+		std::size_t operator()(char const* str) const { return hash_type{}(str); }
+		std::size_t operator()(std::string_view str) const { return hash_type{}(str); }
+		std::size_t operator()(std::string const& str) const { return hash_type{}(str); }
+	};
+
+	template<class V> using UnorderedStringMap = std::unordered_map<std::string, V, StringMultiHash, std::equal_to<>>;
+
+	std::optional<std::vector<std::byte>> read_file(std::filesystem::path const& path);
 }

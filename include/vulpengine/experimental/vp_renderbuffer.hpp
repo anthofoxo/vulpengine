@@ -9,8 +9,8 @@ namespace vulpengine::experimental {
 	class Renderbuffer final {
 	public:
 		struct CreateInfo final {
-			GLsizei width, height;
-			GLenum internalFormat;
+			GLsizei width = 0, height = 0;
+			GLenum internalFormat = GL_NONE;
 			std::string_view label;
 		};
 

@@ -5,6 +5,7 @@
 
 #include <glad/gl.h>
 
+#include <string_view>
 #include <array>
 
 namespace vulpengine::experimental {
@@ -12,12 +13,15 @@ namespace vulpengine::experimental {
 	public:
 		struct CreateInfo final {
 			GLenum target = GL_NONE;
-			GLsizei width = 0, height = 0;
+			GLsizei width = 0, height = 0, depth = 0;
 			GLenum internalFormat = GL_NONE;
 			GLint minFilter = GL_LINEAR;
 			GLint magFilter = GL_LINEAR;
 			GLint wrap = GL_CLAMP_TO_EDGE;
 			std::array<float, 4> border{ 1.0f, 1.0f, 1.0f, 1.0f };
+			std::string_view label;
+			GLsizei levels = 1;
+			GLfloat anisotropy = 1.0f;
 
 #ifdef VP_HAS_STB_IMAGE
 			CreateInfo& with_image(Image const& image);
@@ -25,8 +29,8 @@ namespace vulpengine::experimental {
 		};
 
 		struct UploadInfo final {
-			GLint xoffset = 0, yoffset = 0;
-			GLsizei width = 0, height = 0;
+			GLint xoffset = 0, yoffset = 0, zoffset = 0;
+			GLsizei width = 0, height = 0, depth = 0;
 			GLenum format = GL_NONE;
 			GLenum type = GL_NONE;
 			void const* pixels = nullptr;
@@ -46,6 +50,7 @@ namespace vulpengine::experimental {
 
 		void upload(UploadInfo const& info) const;
 		void bind(GLuint unit) const;
+		void generate_mips() const;
 
 		inline GLuint handle() const { return mHandle; }
 	private:

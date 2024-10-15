@@ -8,7 +8,7 @@
 #	include <glm/glm.hpp>
 #endif
 
-#include "vp_types.hpp"
+#include "vp_util.hpp"
 
 #include <glad/gl.h>
 
@@ -33,13 +33,20 @@ namespace vulpengine::experimental {
 		void bind() const;
 		GLint get_uniform_location(std::string_view name) const;
 
-		void push_vec4f(std::string_view name, float const* v0) const;
-		void push_vec4f(std::string_view name, float v0, float v1, float v2, float v3) const;
+		void push_1f(std::string_view name, float v0) const;
+		void push_2f(std::string_view name, float const* v0) const;
+		void push_2f(std::string_view name, float v0, float v1) const;
+		void push_3f(std::string_view name, float const* v0) const;
+		void push_3f(std::string_view name, float v0, float v1, float v2) const;
+		void push_4f(std::string_view name, float const* v0) const;
+		void push_4f(std::string_view name, float v0, float v1, float v2, float v3) const;
 
 		void push_mat4f(std::string_view name, float const* v0) const;
 
 #ifdef VP_HAS_GLM
-		void push_vec4f(std::string_view name, glm::vec4 const& v0) const;
+		void push_2f(std::string_view name, glm::vec2 const& v0) const;
+		void push_3f(std::string_view name, glm::vec3 const& v0) const;
+		void push_4f(std::string_view name, glm::vec4 const& v0) const;
 
 		void push_mat4f(std::string_view name, glm::mat4 const& v0) const;
 #endif

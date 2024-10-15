@@ -7,8 +7,8 @@
 #include <stb_image.h>
 
 namespace vulpengine::experimental {
-	Image::Image(char const* filename) {
-		stbi_set_flip_vertically_on_load(true);
+	Image::Image(char const* filename, bool flip) {
+		stbi_set_flip_vertically_on_load(flip);
 		mPixels = stbi_load(filename, &mWidth, &mHeight, nullptr, 4);
 
 		if (!mPixels) {

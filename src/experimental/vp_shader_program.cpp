@@ -209,11 +209,31 @@ namespace vulpengine::experimental {
 		return it->second;
 	}
 
-	void ShaderProgram::push_vec4f(std::string_view name, float const* v0) const {
+	void ShaderProgram::push_1f(std::string_view name, float v0) const {
+		glProgramUniform1f(mHandle, get_uniform_location(name), v0);
+	}
+
+	void ShaderProgram::push_2f(std::string_view name, float const* v0) const {
+		glProgramUniform2fv(mHandle, get_uniform_location(name), 1, v0);
+	}
+
+	void ShaderProgram::push_2f(std::string_view name, float v0, float v1) const {
+		glProgramUniform2f(mHandle, get_uniform_location(name), v0, v1);
+	}
+
+	void ShaderProgram::push_3f(std::string_view name, float const* v0) const {
+		glProgramUniform3fv(mHandle, get_uniform_location(name), 1, v0);
+	}
+
+	void ShaderProgram::push_3f(std::string_view name, float v0, float v1, float v2) const {
+		glProgramUniform3f(mHandle, get_uniform_location(name), v0, v1, v2);
+	}
+
+	void ShaderProgram::push_4f(std::string_view name, float const* v0) const {
 		glProgramUniform4fv(mHandle, get_uniform_location(name), 1, v0);
 	}
 
-	void ShaderProgram::push_vec4f(std::string_view name, float v0, float v1, float v2, float v3) const {
+	void ShaderProgram::push_4f(std::string_view name, float v0, float v1, float v2, float v3) const {
 		glProgramUniform4f(mHandle, get_uniform_location(name), v0, v1, v2, v3);
 	}
 
@@ -222,8 +242,9 @@ namespace vulpengine::experimental {
 	}
 
 #ifdef VP_HAS_GLM
-	void ShaderProgram::push_vec4f(std::string_view name, glm::vec4 const& v0) const { push_vec4f(name, glm::value_ptr(v0)); }
-
+	void ShaderProgram::push_2f(std::string_view name, glm::vec2 const& v0) const { push_2f(name, glm::value_ptr(v0)); }
+	void ShaderProgram::push_3f(std::string_view name, glm::vec3 const& v0) const { push_3f(name, glm::value_ptr(v0)); }
+	void ShaderProgram::push_4f(std::string_view name, glm::vec4 const& v0) const { push_4f(name, glm::value_ptr(v0)); }
 	void ShaderProgram::push_mat4f(std::string_view name, glm::mat4 const& v0) const { push_mat4f(name, glm::value_ptr(v0)); }
 #endif
 }

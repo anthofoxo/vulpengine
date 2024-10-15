@@ -1,4 +1,6 @@
-#include "vp_helpers.hpp"
+#include "vp_util.hpp"
+
+#include <fstream>
 
 #ifdef VP_HAS_GLM
 #	include <glm/gtx/norm.hpp>
@@ -22,4 +24,18 @@ namespace vulpengine::helpers {
 		return out;
 	}
 #endif
+}
+
+namespace vulpengine {
+	std::optional<std::vector<std::byte>> read_file(std::filesystem::path const& path) {
+		std::ifstream file(path, std::ios::in | std::ios::binary);
+		if (!file) return std::nullopt;
+
+		std::vector<std::byte> stream;
+		file.seekg(0, std::ios::end);
+		stream.resize(file.tellg());
+		file.seekg(0, std::ios::beg);
+		file.read(reinterpret_cast<char*>(stream.data()), stream.size());
+		return stream;
+	}
 }
