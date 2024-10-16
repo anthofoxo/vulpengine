@@ -27,15 +27,15 @@ namespace vulpengine::helpers {
 }
 
 namespace vulpengine {
-	std::optional<std::vector<std::byte>> read_file(std::filesystem::path const& path) {
+	std::optional<std::vector<char>> read_file(std::filesystem::path const& path) {
 		std::ifstream file(path, std::ios::in | std::ios::binary);
 		if (!file) return std::nullopt;
 
-		std::vector<std::byte> stream;
+		std::vector<char> stream;
 		file.seekg(0, std::ios::end);
 		stream.resize(file.tellg());
 		file.seekg(0, std::ios::beg);
-		file.read(reinterpret_cast<char*>(stream.data()), stream.size());
+		file.read(stream.data(), stream.size());
 		return stream;
 	}
 }

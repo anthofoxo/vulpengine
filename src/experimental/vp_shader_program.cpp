@@ -10,6 +10,7 @@
 #	include <glm/gtc/type_ptr.hpp>
 #endif
 
+#include <array>
 #include <memory>
 #include <format>
 #include <cstdlib> // free

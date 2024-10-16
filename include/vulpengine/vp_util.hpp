@@ -50,5 +50,5 @@ namespace vulpengine {
 
 	template<class V> using UnorderedStringMap = std::unordered_map<std::string, V, StringMultiHash, std::equal_to<>>;
 
-	std::optional<std::vector<std::byte>> read_file(std::filesystem::path const& path);
+	std::optional<std::vector<char>> read_file(std::filesystem::path const& path);
 }

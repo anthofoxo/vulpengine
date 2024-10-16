@@ -11,6 +11,7 @@
 namespace vulpengine::experimental {
 	class Mesh final {
 	public:
+		// If you're having trouble matching arguments, `count` typically needs explicitly cast to `GLsizei`
 		struct CreateInfo final {
 			VertexArray&& vertexArray;
 			std::span<const Wrap<Buffer&&>> buffers;

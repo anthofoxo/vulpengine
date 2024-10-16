@@ -2,7 +2,7 @@
 
 #include "vp_log.hpp"
 
-#include <spdlog/spdlog.h>
+//#include <spdlog/spdlog.h>
 
 namespace {
 	template<class... Callable>

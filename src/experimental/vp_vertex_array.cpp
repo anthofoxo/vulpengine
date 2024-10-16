@@ -21,8 +21,21 @@ namespace vulpengine::experimental {
 			assert(attributeinfo.type != GL_NONE);
 
 			glEnableVertexArrayAttrib(mHandle, i);
-			glVertexArrayAttribFormat(mHandle, i, attributeinfo.size, attributeinfo.type, GL_FALSE, attributeinfo.relativeoffset);
 			glVertexArrayAttribBinding(mHandle, i, attributeinfo.bindingindex);
+
+			bool isFloatingPointType = false;
+			switch (attributeinfo.type) {
+			case GL_HALF_FLOAT:
+			case GL_FLOAT:
+			case GL_DOUBLE:
+				isFloatingPointType = true;
+				break;
+			}
+
+			if (isFloatingPointType)
+				glVertexArrayAttribFormat(mHandle, i, attributeinfo.size, attributeinfo.type, GL_FALSE, attributeinfo.relativeoffset);
+			else 
+				glVertexArrayAttribIFormat(mHandle, i, attributeinfo.size, attributeinfo.type, attributeinfo.relativeoffset);
 		}
 
 		if (info.indexBuffer) {
