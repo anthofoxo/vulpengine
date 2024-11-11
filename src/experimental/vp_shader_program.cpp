@@ -1,8 +1,8 @@
-#include "experimental/vp_shader_program.hpp"
+#include "vulpengine/experimental/vp_shader_program.hpp"
 
 #ifdef VP_HAS_STB_INCLUDE
 
-#include "vp_log.hpp"
+#include "vulpengine/vp_log.hpp"
 
 #include <stb_include.h>
 

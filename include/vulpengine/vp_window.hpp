@@ -1,6 +1,11 @@
 #pragma once
 
-#include "vp_features.hpp"
+/*!
+Wrapper for a GLFW window.
+Automatically handles glfwInit and glfwTerminate
+*/
+
+#include "vulpengine/vp_features.hpp"
 
 #ifdef VP_HAS_GLFW
 
@@ -27,6 +32,7 @@ namespace vulpengine {
 		Window& operator=(Window&& other) noexcept;
 		~Window() noexcept;
 
+		inline operator GLFWwindow*() const { return mHandle; }
 		inline explicit operator bool() const { return mHandle != nullptr; }
 		inline bool valid() const { return mHandle != nullptr; }
 		inline GLFWwindow* handle() const { return mHandle; }

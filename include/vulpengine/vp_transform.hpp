@@ -1,6 +1,10 @@
 #pragma once
 
-#include "vp_features.hpp"
+/*!
+Basic object transform implementation, works generally.
+*/
+
+#include "vulpengine/vp_features.hpp"
 
 #ifdef VP_HAS_GLM
 

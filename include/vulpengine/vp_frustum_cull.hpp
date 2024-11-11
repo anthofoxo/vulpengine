@@ -1,6 +1,10 @@
 #pragma once
 
-#include "vp_features.hpp"
+/*!
+Performs basic frustum culling with a view frustum and AABB
+*/
+
+#include "vulpengine/vp_features.hpp"
 
 #ifdef VP_HAS_GLM
 

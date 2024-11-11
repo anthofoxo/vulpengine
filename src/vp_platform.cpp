@@ -1,4 +1,4 @@
-#include "vp_platform.hpp"
+#include "vulpengine/vp_platform.hpp"
 
 #ifdef VP_WINDOWS
 #	include "vp_platform_win.inl"

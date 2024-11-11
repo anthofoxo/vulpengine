@@ -1,6 +1,6 @@
 #pragma once
 
-#include "vp_transform.hpp"
+#include "vulpengine/vp_transform.hpp"
 
 #include <vector>
 #include <cstddef>
@@ -46,6 +46,11 @@ namespace vulpengine {
 		std::size_t operator()(char const* str) const { return hash_type{}(str); }
 		std::size_t operator()(std::string_view str) const { return hash_type{}(str); }
 		std::size_t operator()(std::string const& str) const { return hash_type{}(str); }
+	};
+
+	template<class... Callable>
+	struct Visitor : Callable... {
+		using Callable::operator()...;
 	};
 
 	template<class V> using UnorderedStringMap = std::unordered_map<std::string, V, StringMultiHash, std::equal_to<>>;

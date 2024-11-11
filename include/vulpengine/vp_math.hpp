@@ -1,6 +1,10 @@
 #pragma once
 
-#include "vp_features.hpp"
+/*!
+Simple set of math functions
+*/
+
+#include "vulpengine/vp_features.hpp"
 
 #ifdef VP_HAS_GLM
 #	include <glm/glm.hpp>

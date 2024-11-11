@@ -1,10 +1,10 @@
 #pragma once
 
-/*
-* A simple wrapper type to hold onto reference types, useful for creating buffers, vertex arrays, and meshes
-* 
-* Experimental:
-* - Needs more testing, will likely rename to Box
+/*!
+A simple wrapper type to hold onto reference types, useful for creating buffers, vertex arrays, and meshes
+
+Needs Improvment:
+- Needs more testing, will likely rename to Box
 */
 
 #include <type_traits>

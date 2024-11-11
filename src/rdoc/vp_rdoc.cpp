@@ -1,4 +1,4 @@
-#include "vp_rdoc.hpp"
+#include "vulpengine/vp_rdoc.hpp"
 
 #if defined(__has_include) && __has_include(<renderdoc_app.h>)
 #	define VP_HAS_RDOC
@@ -12,6 +12,8 @@ namespace {
 	RENDERDOC_API_1_0_0* gApi = nullptr;
 }
 
+// These platform files should define `void attach_shared_lib()`
+
 #ifdef VP_WINDOWS
 #	include "vp_rdoc_win.inl"
 #endif
@@ -21,6 +23,13 @@ namespace {
 #endif
 
 namespace vulpengine::rdoc {
+	void setup(bool load) {
+		attach_shared_lib(load);
+		if (!is_attached()) return;
+		gApi->MaskOverlayBits(eRENDERDOC_Overlay_None, eRENDERDOC_Overlay_None);
+		gApi->SetCaptureOptionU32(eRENDERDOC_Option_DebugOutputMute, 0);
+	}
+
 	bool is_attached() {
 		return gApi;
 	}

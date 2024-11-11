@@ -1,4 +1,4 @@
-#include "vp_math.hpp"
+#include "vulpengine/vp_math.hpp"
 
 #ifdef VP_HAS_GLM
 #	define GLM_ENABLE_EXPERIMENTAL

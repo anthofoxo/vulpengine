@@ -1,5 +1,5 @@
-#include "vp_entry.hpp"
-#include "vp_log.hpp"
+#include "vulpengine/vp_entry.hpp"
+#include "vulpengine/vp_log.hpp"
 
 namespace vulpengine {
 	void entry_init() {

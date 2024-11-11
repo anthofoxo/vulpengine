@@ -1,6 +1,12 @@
 #pragma once
 
-#include "vp_features.hpp"
+/*!
+Simple log macros, will default expand into standard compliant logs
+
+If spdlog is detected then will prefer to expand using spdlog
+*/
+
+#include "vulpengine/vp_features.hpp"
 
 #ifdef VP_HAS_SPDLOG
 #	include <spdlog/spdlog.h>

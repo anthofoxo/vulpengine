@@ -1,6 +1,11 @@
 #pragma once
 
-#include "vp_features.hpp"
+/*!
+Profiling. If tracy is supported these macros can be used to instument your code.
+Otherwise these do nothing.
+*/
+
+#include "vulpengine/vp_features.hpp"
 
 #ifdef VP_HAS_TRACY
 #	include <glad/gl.h>

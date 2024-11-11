@@ -1,9 +1,11 @@
 #pragma once
 
-// To enable loading the RenderDoc shared library at startup
-// #define VP_FEATURE_RDOC_UNSUPPORTED
-// 
-// This method of attaching RenderDoc is unsupported by the RenderDoc developers and may break.
+/*!
+To enable loading the RenderDoc shared library at startup
+#define VP_FEATURE_RDOC_UNSUPPORTED
+ 
+This method of attaching RenderDoc is unsupported by the RenderDoc developers and may break.
+*/
 
 namespace vulpengine::rdoc {
 	void setup(bool load);

@@ -1,10 +1,10 @@
-#include "vp_window.hpp"
+#include "vulpengine/vp_window.hpp"
 
 #ifdef VP_HAS_GLFW
 
-#include "vp_platform.hpp"
-#include "vp_profile.hpp"
-#include "vp_log.hpp"
+#include "vulpengine/vp_platform.hpp"
+#include "vulpengine/vp_profile.hpp"
+#include "vulpengine/vp_log.hpp"
 
 // Prevent APIENTRY macro redefinition
 #ifdef VP_WINDOWS

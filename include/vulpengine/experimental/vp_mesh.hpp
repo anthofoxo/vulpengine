@@ -1,8 +1,17 @@
 #pragma once
 
-#include "experimental/vp_wrap.hpp"
-#include "experimental/vp_vertex_array.hpp"
-#include "experimental/vp_buffer.hpp"
+/*!
+A mesh is a simple container for OpenGL buffers and a vertex array.
+Also contains some simple information needed to perform draw calls.
+
+Needs Improvment:
+1. OpenGL wrappers should be consolidated into one file. `vp_ogl` is likely the new target.
+
+2. Needs more documentation. Using the api recommends using the wrap utility, this is not undocumented atm.
+*/
+
+#include "vulpengine/experimental/vp_wrap.hpp"
+#include "vulpengine/experimental/vp_ogl.hpp"
 
 #include <vector>
 #include <span>

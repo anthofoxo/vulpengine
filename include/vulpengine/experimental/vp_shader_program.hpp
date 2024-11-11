@@ -1,6 +1,19 @@
 #pragma once
 
-#include "vp_features.hpp"
+/*!
+ShaderProgram is a simple type safe wrapper around an OpenGL shader program.
+
+Needs Improvment:
+1. OpenGL wrappers should be consolidated into one file. `vp_ogl` is likely the new target.
+
+2. Needs more push_XXX api functions. The integer functions are a priority.
+
+3. We should get better error messages, currently stb_include doesn't tell us
+what was included or in what order, thus we can't reasonably match the source number
+to a filepath. We should work on a custom stb_include like header.
+*/
+
+#include "vulpengine/vp_features.hpp"
 
 #ifdef VP_HAS_STB_INCLUDE
 
@@ -8,7 +21,7 @@
 #	include <glm/glm.hpp>
 #endif
 
-#include "vp_util.hpp"
+#include "vulpengine/vp_util.hpp"
 
 #include <glad/gl.h>
 
@@ -52,6 +65,7 @@ namespace vulpengine::experimental {
 #endif
 
 		inline explicit operator bool() const { return mHandle; }
+		inline operator GLuint() const { return mHandle; }
 		inline bool valid() const { return mHandle; }
 		inline GLuint handle() const { return mHandle; }
 	private:
