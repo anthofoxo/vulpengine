@@ -17,7 +17,7 @@ A general purpose write function is provided, given a data pointer and size
 namespace vulpengine::experimental {
 	struct ByteStream {
 		// Shallow copy
-		template<class T, std::enable_if_t<std::is_pod_v<T>, int> = 0>
+		template<class T, std::enable_if_t<std::is_trivially_copyable_v<T>, int> = 0>
 		void write(T const& val) {
 			for (size_t i = 0; i < sizeof(T); ++i) mData.emplace_back();
 			*reinterpret_cast<T*>(mData.data() + (mData.size() - sizeof(T))) = val;
@@ -29,11 +29,11 @@ namespace vulpengine::experimental {
 		// `value_type` using declaration
 		//
 		// std::vector, std::array, std::span, etc match these requirements
-		template<class T, std::enable_if_t<!std::is_pod_v<T>, int> = 0>
+		template<class T, std::enable_if_t<!std::is_trivially_copyable_v<T>, int> = 0>
 		void write(T const& val) {
 			size_t const sizeBytes = val.size() * sizeof(T::value_type);
 			for (size_t i = 0; i < sizeBytes; ++i) mData.emplace_back();
-			memcpy(mData.data() + sizeBytes), val.data(), sizeBytes);
+			memcpy(mData.data() + sizeBytes, val.data(), sizeBytes);
 		}
 
 		// Non template write function, takes data pointer and size in bytes
