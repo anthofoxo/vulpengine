@@ -160,6 +160,58 @@ namespace vulpengine::experimental {
 
 // Texture
 namespace vulpengine::experimental {
+	namespace {
+#if defined(GL_VERSION_4_6) || defined(GL_ARB_texture_filter_anisotropic)
+#	define VP_GL_MAX_TEXTURE_MAX_ANISOTROPY GL_MAX_TEXTURE_MAX_ANISOTROPY
+#	define VP_GL_TEXTURE_MAX_ANISOTROPY GL_TEXTURE_MAX_ANISOTROPY
+#endif
+
+#if !defined(VP_GL_MAX_TEXTURE_MAX_ANISOTROPY) && defined(GL_EXT_texture_filter_anisotropic)
+#	define VP_GL_MAX_TEXTURE_MAX_ANISOTROPY GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT
+#	define VP_GL_TEXTURE_MAX_ANISOTROPY GL_TEXTURE_MAX_ANISOTROPY_EXT
+#endif
+
+		bool has_anisotropy() {
+#if defined(GL_VERSION_4_6)
+			if (GLAD_GL_VERSION_4_6) {
+				return true;
+			}
+#elif defined(GL_ARB_texture_filter_anisotropic)
+			if (GLAD_GL_ARB_texture_filter_anisotropic) {
+				return true;
+			}
+#elif defined(GL_EXT_texture_filter_anisotropic)
+			if (GLAD_GL_EXT_texture_filter_anisotropic) {
+				return true;
+			}
+#endif
+			return false;
+		}
+
+		float max_anisotropy() {
+#if defined(GL_VERSION_4_6)
+			if (GLAD_GL_VERSION_4_6) {
+				float v;
+				glGetFloatv(GL_MAX_TEXTURE_MAX_ANISOTROPY, &v);
+				return v;
+			}
+#elif defined(GL_ARB_texture_filter_anisotropic)
+			if (GLAD_GL_ARB_texture_filter_anisotropic) {
+				float v;
+				glGetFloatv(GL_MAX_TEXTURE_MAX_ANISOTROPY, &v);
+				return v;
+			}
+#elif defined(GL_EXT_texture_filter_anisotropic)
+			if (GLAD_GL_EXT_texture_filter_anisotropic) {
+				float v;
+				glGetFloatv(GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT, &v);
+				return v;
+			}
+#endif
+			return 1.0f;
+		}
+	}
+
 #ifdef VP_HAS_STB_IMAGE
 	Texture::CreateInfo& Texture::CreateInfo::with_image(Image const& image) {
 		target = GL_TEXTURE_2D;
@@ -202,8 +254,12 @@ namespace vulpengine::experimental {
 		glTextureParameteri(mHandle, GL_TEXTURE_WRAP_T, info.wrap);
 		glTextureParameteri(mHandle, GL_TEXTURE_WRAP_R, info.wrap);
 		glTextureParameteri(mHandle, GL_TEXTURE_MAX_LEVEL, info.levels - 1);
-		glTextureParameterf(mHandle, GL_TEXTURE_MAX_ANISOTROPY, info.anisotropy);
 		glTextureParameterfv(mHandle, GL_TEXTURE_BORDER_COLOR, info.border.data());
+
+		if (has_anisotropy()) {
+			float maxAnisotropy = max_anisotropy();
+			glTextureParameterf(mHandle, VP_GL_TEXTURE_MAX_ANISOTROPY, info.anisotropy > maxAnisotropy ? maxAnisotropy : info.anisotropy);
+		}
 
 		VP_LOG_TRACE("Created texture: {}", mHandle);
 

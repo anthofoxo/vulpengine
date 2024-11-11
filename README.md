@@ -9,7 +9,13 @@ Vulpengine requires C++20 Support.
 
 Vulpengine requires the following dependencies.
 * [GLFW 3.4](https://github.com/glfw/glfw/tree/3.4)
-* [Glad](https://gen.glad.sh/#generator=c&api=gl%3D4.6&profile=gl%3Dcore%2Cgles1%3Dcommon) (OpenGL 4.6+)
+* [Glad](https://gen.glad.sh/)
+
+## OpenGL Requirements and Support
+OpenGL 4.5+ is required.
+Optionally supports:
+* GL_ARB_texture_filter_anisotropic (4.6+ Supported)
+* GL_EXT_texture_filter_anisotropic
 
 ## Building
 
