@@ -48,12 +48,12 @@ namespace vulpengine {
 		std::size_t operator()(std::string const& str) const { return hash_type{}(str); }
 	};
 
+	template<class V> using UnorderedStringMap = std::unordered_map<std::string, V, StringMultiHash, std::equal_to<>>;
+
 	template<class... Callable>
 	struct Visitor : Callable... {
 		using Callable::operator()...;
 	};
-
-	template<class V> using UnorderedStringMap = std::unordered_map<std::string, V, StringMultiHash, std::equal_to<>>;
 
 	std::optional<std::vector<char>> read_file(std::filesystem::path const& path);
 }

@@ -5,6 +5,7 @@ Type safe OpenGL wrappers.
 */
 
 #include "vulpengine/vp_features.hpp"
+#include "vulpengine/vp_util.hpp"
 #include "vulpengine/experimental/vp_image.hpp"
 #include "vulpengine/experimental/vp_wrap.hpp"
 
@@ -21,6 +22,10 @@ Type safe OpenGL wrappers.
 #include <optional>
 #include <variant>
 #include <functional>
+
+#ifdef VP_LIB_STB_INCLUDE
+#	define VP_HAS_SHADER_PROGRAM
+#endif
 
 namespace vulpengine::experimental {
 	class Texture final {
@@ -187,4 +192,82 @@ namespace vulpengine::experimental {
 	private:
 		GLuint mHandle = 0;
 	};
+
+#ifdef VP_HAS_SHADER_PROGRAM
+	class ShaderProgram final {
+	public:
+		struct CreateInfo final {
+			char const* file = nullptr;
+			char const* includePath = "./";
+		};
+
+		ShaderProgram() noexcept = default;
+		ShaderProgram(CreateInfo const& info);
+		ShaderProgram(ShaderProgram const&) = delete;
+		ShaderProgram& operator=(ShaderProgram const&) = delete;
+		inline ShaderProgram(ShaderProgram&& other) noexcept { *this = std::move(other); }
+		ShaderProgram& operator=(ShaderProgram&& other) noexcept;
+		~ShaderProgram() noexcept;
+
+		void bind() const;
+		GLint get_uniform_location(std::string_view name) const;
+
+		void push_1i(std::string_view name, int v0) const;
+		void push_1i(std::string_view name, int const* v0, int count = 1) const;
+		inline void push_1i(std::string_view name, std::span<int const> v0) const { push_1i(name, v0.data(), v0.size()); }
+
+		void push_2i(std::string_view name, int v0, int v1) const;
+		void push_2i(std::string_view name, int const* v0, int count = 1) const;
+
+		void push_3i(std::string_view name, int v0, int v1, int v2) const;
+		void push_3i(std::string_view name, int const* v0, int count = 1) const;
+
+		void push_4i(std::string_view name, int v0, int v1, int v2, int v3) const;
+		void push_4i(std::string_view name, int const* v0, int count = 1) const;
+
+		void push_1f(std::string_view name, float v0) const;
+		void push_1f(std::string_view name, float const* v0, int count = 1) const;
+		inline void push_1f(std::string_view name, std::span<float const> v0) const { push_1f(name, v0.data(), v0.size()); }
+
+		void push_2f(std::string_view name, float v0, float v1) const;
+		void push_2f(std::string_view name, float const* v0, int count = 1) const;
+
+		void push_3f(std::string_view name, float v0, float v1, float v2) const;
+		void push_3f(std::string_view name, float const* v0, int count = 1) const;
+
+		void push_4f(std::string_view name, float v0, float v1, float v2, float v3) const;
+		void push_4f(std::string_view name, float const* v0, int count = 1) const;
+
+		void push_mat4f(std::string_view name, float const* v0) const;
+#ifdef VP_HAS_GLM
+		inline void push_2i(std::string_view name, glm::ivec2 const* v0, int count = 1) const { push_2i(name, reinterpret_cast<int const*>(v0), count); }
+		inline void push_3i(std::string_view name, glm::ivec3 const* v0, int count = 1) const { push_3i(name, reinterpret_cast<int const*>(v0), count); }
+		inline void push_4i(std::string_view name, glm::ivec4 const* v0, int count = 1) const { push_4i(name, reinterpret_cast<int const*>(v0), count); }
+		inline void push_2f(std::string_view name, glm::vec2 const* v0, int count = 1) const { push_2f(name, reinterpret_cast<float const*>(v0), count); }
+		inline void push_3f(std::string_view name, glm::vec3 const* v0, int count = 1) const { push_3f(name, reinterpret_cast<float const*>(v0), count); }
+		inline void push_4f(std::string_view name, glm::vec4 const* v0, int count = 1) const { push_4f(name, reinterpret_cast<float const*>(v0), count); }
+		inline void push_2i(std::string_view name, std::span<glm::ivec2 const> v0) const { push_2i(name, v0.data(), v0.size()); }
+		inline void push_3i(std::string_view name, std::span<glm::ivec3 const> v0) const { push_3i(name, v0.data(), v0.size()); }
+		inline void push_4i(std::string_view name, std::span<glm::ivec4 const> v0) const { push_4i(name, v0.data(), v0.size()); }
+		inline void push_2f(std::string_view name, std::span<glm::vec2 const> v0) const { push_2f(name, v0.data(), v0.size()); }
+		inline void push_3f(std::string_view name, std::span<glm::vec3 const> v0) const { push_3f(name, v0.data(), v0.size()); }
+		inline void push_4f(std::string_view name, std::span<glm::vec4 const> v0) const { push_4f(name, v0.data(), v0.size()); }
+		void push_2i(std::string_view name, glm::ivec2 const& v0) const;
+		void push_3i(std::string_view name, glm::ivec3 const& v0) const;
+		void push_4i(std::string_view name, glm::ivec4 const& v0) const;
+		void push_2f(std::string_view name, glm::vec2 const& v0) const;
+		void push_3f(std::string_view name, glm::vec3 const& v0) const;
+		void push_4f(std::string_view name, glm::vec4 const& v0) const;
+		void push_mat4f(std::string_view name, glm::mat4 const& v0) const;
+#endif
+
+		inline explicit operator bool() const { return mHandle; }
+		inline operator GLuint() const { return mHandle; }
+		inline bool valid() const { return mHandle; }
+		inline GLuint handle() const { return mHandle; }
+	private:
+		GLuint mHandle = 0;
+		UnorderedStringMap<int> mActiveUniforms;
+	};
+#endif // VP_HAS_SHADER_PROGRAM
 }
