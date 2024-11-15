@@ -5,7 +5,22 @@
 #	include <glm/gtx/norm.hpp>
 #endif
 
-namespace vulpengine::math {
+#include <random>
+
+namespace {
+	std::random_device gRd;
+	std::mt19937 gGen(gRd());
+}
+
+namespace vulpengine {
+	int random(int min, int max) {
+		return std::uniform_real_distribution(min, max)(gGen);
+	}
+
+	float random(float min, float max) {
+		return std::uniform_int_distribution(min, max)(gGen);
+	}
+
 #ifdef VP_HAS_GLM
 	glm::vec3 aabb_clamped_point(glm::vec3 const& min, glm::vec3 const& max, glm::vec3 const& pos) {
 		glm::vec3 clamped;

@@ -12,11 +12,14 @@ Simple set of math functions
 
 #include <array>
 
-namespace vulpengine::math {
+namespace vulpengine {
 	template<class T>
 	[[nodiscard]] T map(T value, T min1, T max1, T min2, T max2) {
 		return min2 + (value - min1) * (max2 - min2) / (max1 - min1);
 	}
+
+	[[nodiscard]] int random(int min, int max);
+	[[nodiscard]] float random(float min, float max);
 
 #ifdef VP_HAS_GLM
 	[[nodiscard]] glm::vec3 aabb_clamped_point(glm::vec3 const& min, glm::vec3 const& max, glm::vec3 const& pos);
