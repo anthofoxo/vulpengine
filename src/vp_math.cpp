@@ -14,11 +14,11 @@ namespace {
 
 namespace vulpengine {
 	int random(int min, int max) {
-		return std::uniform_real_distribution(min, max)(gGen);
+		return std::uniform_int_distribution(min, max)(gGen);
 	}
 
 	float random(float min, float max) {
-		return std::uniform_int_distribution(min, max)(gGen);
+		return std::uniform_float_distribution(min, max)(gGen);
 	}
 
 #ifdef VP_HAS_GLM
