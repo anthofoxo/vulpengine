@@ -18,7 +18,7 @@ namespace vulpengine {
 	}
 
 	float random(float min, float max) {
-		return std::uniform_float_distribution(min, max)(gGen);
+		return std::uniform_real_distribution(min, max)(gGen);
 	}
 
 #ifdef VP_HAS_GLM
