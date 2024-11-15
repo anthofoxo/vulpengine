@@ -18,9 +18,8 @@ namespace vulpengine {
 	}
 
 	void Transform::translate(glm::vec3 const& direction) {
-		glm::mat4 matrix = get();
-		matrix = glm::translate(matrix, direction);
-		set(matrix);
+		glm::mat4 const result = glm::translate(get(), direction);
+		position = result[3]; // Only care about position
 	}
 }
 #endif // VP_HAS_GLM
