@@ -56,4 +56,5 @@ namespace vulpengine {
 	};
 
 	std::optional<std::vector<char>> read_file(std::filesystem::path const& path);
+	std::optional<std::string> read_file_string(std::filesystem::path const& path);
 }

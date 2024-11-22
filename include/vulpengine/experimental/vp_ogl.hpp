@@ -23,10 +23,6 @@ Type safe OpenGL wrappers.
 #include <variant>
 #include <functional>
 
-#ifdef VP_LIB_STB_INCLUDE
-#	define VP_HAS_SHADER_PROGRAM
-#endif
-
 namespace vulpengine::experimental {
 	class Texture final {
 	public:
@@ -193,12 +189,10 @@ namespace vulpengine::experimental {
 		GLuint mHandle = 0;
 	};
 
-#ifdef VP_HAS_SHADER_PROGRAM
 	class ShaderProgram final {
 	public:
 		struct CreateInfo final {
-			char const* file = nullptr;
-			char const* includePath = "./";
+			char const* path = nullptr;
 		};
 
 		ShaderProgram() noexcept = default;
@@ -214,7 +208,7 @@ namespace vulpengine::experimental {
 
 		void push_1i(std::string_view name, int v0) const;
 		void push_1i(std::string_view name, int const* v0, int count = 1) const;
-		inline void push_1i(std::string_view name, std::span<int const> v0) const { push_1i(name, v0.data(), v0.size()); }
+		inline void push_1i(std::string_view name, std::span<int const> v0) const { push_1i(name, v0.data(), static_cast<int>(v0.size())); }
 
 		void push_2i(std::string_view name, int v0, int v1) const;
 		void push_2i(std::string_view name, int const* v0, int count = 1) const;
@@ -227,7 +221,7 @@ namespace vulpengine::experimental {
 
 		void push_1f(std::string_view name, float v0) const;
 		void push_1f(std::string_view name, float const* v0, int count = 1) const;
-		inline void push_1f(std::string_view name, std::span<float const> v0) const { push_1f(name, v0.data(), v0.size()); }
+		inline void push_1f(std::string_view name, std::span<float const> v0) const { push_1f(name, v0.data(), static_cast<int>(v0.size())); }
 
 		void push_2f(std::string_view name, float v0, float v1) const;
 		void push_2f(std::string_view name, float const* v0, int count = 1) const;
@@ -246,12 +240,12 @@ namespace vulpengine::experimental {
 		inline void push_2f(std::string_view name, glm::vec2 const* v0, int count = 1) const { push_2f(name, reinterpret_cast<float const*>(v0), count); }
 		inline void push_3f(std::string_view name, glm::vec3 const* v0, int count = 1) const { push_3f(name, reinterpret_cast<float const*>(v0), count); }
 		inline void push_4f(std::string_view name, glm::vec4 const* v0, int count = 1) const { push_4f(name, reinterpret_cast<float const*>(v0), count); }
-		inline void push_2i(std::string_view name, std::span<glm::ivec2 const> v0) const { push_2i(name, v0.data(), v0.size()); }
-		inline void push_3i(std::string_view name, std::span<glm::ivec3 const> v0) const { push_3i(name, v0.data(), v0.size()); }
-		inline void push_4i(std::string_view name, std::span<glm::ivec4 const> v0) const { push_4i(name, v0.data(), v0.size()); }
-		inline void push_2f(std::string_view name, std::span<glm::vec2 const> v0) const { push_2f(name, v0.data(), v0.size()); }
-		inline void push_3f(std::string_view name, std::span<glm::vec3 const> v0) const { push_3f(name, v0.data(), v0.size()); }
-		inline void push_4f(std::string_view name, std::span<glm::vec4 const> v0) const { push_4f(name, v0.data(), v0.size()); }
+		inline void push_2i(std::string_view name, std::span<glm::ivec2 const> v0) const { push_2i(name, v0.data(), static_cast<int>(v0.size())); }
+		inline void push_3i(std::string_view name, std::span<glm::ivec3 const> v0) const { push_3i(name, v0.data(), static_cast<int>(v0.size())); }
+		inline void push_4i(std::string_view name, std::span<glm::ivec4 const> v0) const { push_4i(name, v0.data(), static_cast<int>(v0.size())); }
+		inline void push_2f(std::string_view name, std::span<glm::vec2 const> v0) const { push_2f(name, v0.data(), static_cast<int>(v0.size())); }
+		inline void push_3f(std::string_view name, std::span<glm::vec3 const> v0) const { push_3f(name, v0.data(), static_cast<int>(v0.size())); }
+		inline void push_4f(std::string_view name, std::span<glm::vec4 const> v0) const { push_4f(name, v0.data(), static_cast<int>(v0.size())); }
 		void push_2i(std::string_view name, glm::ivec2 const& v0) const;
 		void push_3i(std::string_view name, glm::ivec3 const& v0) const;
 		void push_4i(std::string_view name, glm::ivec4 const& v0) const;
@@ -269,5 +263,4 @@ namespace vulpengine::experimental {
 		GLuint mHandle = 0;
 		UnorderedStringMap<int> mActiveUniforms;
 	};
-#endif // VP_HAS_SHADER_PROGRAM
 }

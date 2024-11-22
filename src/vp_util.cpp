@@ -38,4 +38,16 @@ namespace vulpengine {
 		file.read(stream.data(), stream.size());
 		return stream;
 	}
+
+	std::optional<std::string> read_file_string(std::filesystem::path const& path) {
+		std::ifstream file(path, std::ios::in | std::ios::binary);
+		if (!file) return std::nullopt;
+
+		std::string stream;
+		file.seekg(0, std::ios::end);
+		stream.resize(file.tellg());
+		file.seekg(0, std::ios::beg);
+		file.read(stream.data(), stream.size());
+		return stream;
+	}
 }

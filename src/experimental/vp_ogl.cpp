@@ -2,8 +2,6 @@
 #include "vulpengine/vp_util.hpp"
 #include "vulpengine/experimental/vp_ogl.hpp"
 
-#include <stb_include.h>
-
 #ifdef VP_HAS_GLM
 #	include <glm/gtc/type_ptr.hpp>
 #endif
@@ -374,15 +372,56 @@ namespace vulpengine::experimental {
 	}
 }
 
-#ifdef VP_HAS_SHADER_PROGRAM
+#include <regex>
+#include <expected>
+#include <sstream>
+
 namespace vulpengine::experimental {
 	namespace {
-		std::unique_ptr<char, decltype(&free)> preprocessShader(char const* file, char const* inject, char const* includePath) {
-			char error[256]; // stb_include_file expects this to be 256
-			memset(error, 0, sizeof(error));
-			std::unique_ptr<char, decltype(&free)> source = { stb_include_file((char*)file, (char*)inject, (char*)includePath, error), &free };
-			if (!source) VP_LOG_ERROR("Shader preprocessor error in {}: {}", file, error);
-			return source;
+		std::expected<std::string, std::string> preprocess(std::filesystem::path const& path, std::string_view inject) {
+			// Read initial file
+			auto optContent = read_file_string(path);
+			if (!optContent) return std::unexpected("Failed to read file");
+
+			// Make writable streams
+			std::istringstream iss(*optContent);
+			std::stringstream oss;
+
+			// Track sources and lines
+			int currentLine = 1;
+			int sourceIndex = 1;
+
+			// Split the lines and iterate
+			for (std::string line; std::getline(iss, line); ++currentLine) {
+				// #inject
+				if (std::regex_search(line, std::regex("\\s*#\\s*inject"))) {
+					oss << std::format("#line 1 {}\n", sourceIndex++); // Line 1 of new source
+					oss << inject << '\n';
+					oss << std::format("#line {} 0\n", currentLine + 1); // Next line of current source
+				}
+				else {
+					// #include
+					if (std::smatch matches; std::regex_search(line, matches, std::regex("\\s*#\\s*include\\s*\"([A-Za-z0-9_\\.]+)\""))) {
+						std::string const includePath = matches[1].str();
+
+						oss << std::format("#line 1 {}\n", sourceIndex++); // Line 1 of new source
+						
+						// Open file relative to current source then write the contents into the output stream
+						auto optInclude = read_file_string(path.parent_path() / includePath);
+						if (!optInclude) return std::unexpected(std::format("Cannot open source file {} at line {}", includePath, currentLine));
+						oss << *optInclude << '\n';
+
+						oss << std::format("#line {} 0\n", currentLine + 1);  // Next line of current source
+					}
+					else {
+						// No preprocessor is needed for this line
+						oss << line << '\n';
+					}
+				}
+			}
+
+			// Return generated string
+			return oss.str();
 		}
 
 		class Shader final {
@@ -458,20 +497,28 @@ namespace vulpengine::experimental {
 	}
 
 	ShaderProgram::ShaderProgram(CreateInfo const& info) {
-		assert(info.file != nullptr);
+		assert(info.path != nullptr);
 
-		std::unique_ptr vertSource = preprocessShader(info.file, "#version 460 core\n#define VERT", info.includePath);
-		if (!vertSource) return;
+		auto vertSource = preprocess(info.path, "#define VERT");
 
-		std::unique_ptr fragSource = preprocessShader(info.file, "#version 460 core\n#define FRAG", info.includePath);
-		if (!fragSource) return;
+		if (!vertSource) {
+			VP_LOG_ERROR("{}", vertSource.error());
+			return;
+		}
 
-		std::string vertLabel = std::format("{} [vert]", info.file);
-		std::string fragLabel = std::format("{} [frag]", info.file);
+		auto fragSource = preprocess(info.path, "#define FRAG");
+
+		if (!fragSource) {
+			VP_LOG_ERROR("{}", fragSource.error());
+			return;
+		}
+
+		std::string vertLabel = std::format("{} [vert]", info.path);
+		std::string fragLabel = std::format("{} [frag]", info.path);
 
 		Shader vert = { {
 			.type = GL_VERTEX_SHADER,
-			.source = vertSource.get(),
+			.source = *vertSource,
 			.label = vertLabel
 		} };
 
@@ -479,7 +526,7 @@ namespace vulpengine::experimental {
 
 		Shader frag = { {
 			.type = GL_FRAGMENT_SHADER,
-			.source = fragSource.get(),
+			.source = *fragSource,
 			.label = fragLabel
 		} };
 
@@ -504,12 +551,12 @@ namespace vulpengine::experimental {
 			glGetProgramInfoLog(mHandle, infoLogLength, nullptr, infoLog.data());
 
 			if (linkStatus)
-				VP_LOG_INFO("Program info log in {}: {}", info.file, infoLog);
+				VP_LOG_INFO("Program info log in {}: {}", info.path, infoLog);
 			else
-				VP_LOG_ERROR("Program link error in {}: {}", info.file, infoLog);
+				VP_LOG_ERROR("Program link error in {}: {}", info.path, infoLog);
 		}
 
-		glObjectLabel(GL_PROGRAM, mHandle, -1, info.file);
+		glObjectLabel(GL_PROGRAM, mHandle, -1, info.path);
 
 		if (!linkStatus) {
 			glDeleteProgram(mHandle);
@@ -644,4 +691,3 @@ namespace vulpengine::experimental {
 	void ShaderProgram::push_mat4f(std::string_view name, glm::mat4 const& v0) const { push_mat4f(name, glm::value_ptr(v0)); }
 #endif
 }
-#endif // VP_HAS_SHADER_PROGRAM

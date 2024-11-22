@@ -32,11 +32,6 @@ Todo: Refactor feature macros:
 #	define VP_HAS_STB_IMAGE
 #endif
 
-// stb_include required for the OpenGL shader program wrappers
-#if __has_include(<stb_include.h>)
-#	define VP_LIB_STB_INCLUDE
-#endif
-
 #if __has_include(<glad/gl.h>)
 #	define VP_LIB_GLAD
 #endif
