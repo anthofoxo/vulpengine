@@ -55,6 +55,10 @@ namespace vulpengine {
 		using Callable::operator()...;
 	};
 
+	// Converts a path into a utf8 encoded string
+	// u8string is practically a joke in terms of support, so we simply reinterpret it as a std::string
+	[[nodiscard]] std::string path_to_string(std::filesystem::path const& path);
+
 	std::optional<std::vector<char>> read_file(std::filesystem::path const& path);
 	std::optional<std::string> read_file_string(std::filesystem::path const& path);
 }

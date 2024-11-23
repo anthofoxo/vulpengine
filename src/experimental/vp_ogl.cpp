@@ -373,11 +373,6 @@ namespace vulpengine::experimental {
 
 namespace vulpengine::experimental {
 	namespace {
-		std::string path_to_string(std::filesystem::path const& path) {
-			auto u8string = path.generic_u8string();
-			return std::string(reinterpret_cast<char const*>(u8string.data()), (u8string.cend() - u8string.cbegin()));
-		}
-
 		std::expected<std::string, ShaderProgram::Message> preprocess(std::filesystem::path const& path, std::string_view inject, std::vector<std::string>& sourceMap) {
 			// Read initial file
 			auto optContent = read_file_string(path);
@@ -539,6 +534,7 @@ namespace vulpengine::experimental {
 		auto vertSource = preprocess(info.path, "#define VERT", sourceMapVert);
 
 		if (!vertSource) {
+			mMessages.emplace_back(vertSource.error());
 			VP_LOG_ERROR("{}", vertSource.error().message);
 			return;
 		}
@@ -547,6 +543,7 @@ namespace vulpengine::experimental {
 		auto fragSource = preprocess(info.path, "#define FRAG", sourceMapFrag);
 
 		if (!fragSource) {
+			mMessages.emplace_back(fragSource.error());
 			VP_LOG_ERROR("{}", fragSource.error().message);
 			return;
 		}

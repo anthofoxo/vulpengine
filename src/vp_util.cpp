@@ -27,6 +27,11 @@ namespace vulpengine::helpers {
 }
 
 namespace vulpengine {
+	std::string path_to_string(std::filesystem::path const& path) {
+		auto const u8string = path.generic_u8string();
+		return std::string(reinterpret_cast<char const*>(u8string.data()), u8string.cend() - u8string.cbegin());
+	}
+
 	std::optional<std::vector<char>> read_file(std::filesystem::path const& path) {
 		std::ifstream file(path, std::ios::in | std::ios::binary);
 		if (!file) return std::nullopt;
