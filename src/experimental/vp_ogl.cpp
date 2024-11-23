@@ -269,8 +269,6 @@ namespace vulpengine::experimental {
 			glTextureParameterf(mHandle, VP_GL_TEXTURE_MAX_ANISOTROPY, info.anisotropy > maxAnisotropy ? maxAnisotropy : info.anisotropy);
 		}
 
-		VP_LOG_TRACE("Created texture: {}", mHandle);
-
 		if (!info.label.empty())
 			glObjectLabel(GL_TEXTURE, mHandle, static_cast<GLsizei>(info.label.size()), info.label.data());
 	}
@@ -281,10 +279,7 @@ namespace vulpengine::experimental {
 	}
 
 	Texture::~Texture() noexcept {
-		if (mHandle) {
-			VP_LOG_TRACE("Destroyed texture: {}", mHandle);
-			glDeleteTextures(1, &mHandle);
-		}
+		if (mHandle) glDeleteTextures(1, &mHandle);
 	}
 
 	void Texture::upload(UploadInfo const& info) const {
@@ -348,7 +343,6 @@ namespace vulpengine::experimental {
 		if (info.indexBuffer) {
 			glVertexArrayElementBuffer(mHandle, info.indexBuffer->value.handle());
 		}
-
 
 		if (!info.label.empty()) {
 			glObjectLabel(GL_VERTEX_ARRAY, mHandle, static_cast<GLsizei>(info.label.size()), info.label.data());
@@ -509,8 +503,6 @@ namespace vulpengine::experimental {
 				if (!info.label.empty())
 					glObjectLabel(GL_SHADER, mHandle, static_cast<GLsizei>(info.label.size()), info.label.data());
 
-				VP_LOG_TRACE("Created shader: {}", mHandle);
-
 				if (!compileStatus) {
 					glDeleteShader(mHandle);
 					mHandle = 0;
@@ -527,10 +519,7 @@ namespace vulpengine::experimental {
 			}
 
 			inline ~Shader() noexcept {
-				if (mHandle) {
-					VP_LOG_TRACE("Deleted shader: {}", mHandle);
-					glDeleteShader(mHandle);
-				}
+				if (mHandle) glDeleteShader(mHandle);
 			}
 
 			inline explicit operator bool() const { return mHandle; }
@@ -544,7 +533,7 @@ namespace vulpengine::experimental {
 	}
 
 	ShaderProgram::ShaderProgram(CreateInfo const& info) {
-		assert(info.path != nullptr);
+		assert(!info.path.empty());
 
 		std::vector<std::string> sourceMapVert;
 		auto vertSource = preprocess(info.path, "#define VERT", sourceMapVert);
@@ -592,9 +581,6 @@ namespace vulpengine::experimental {
 
 		if (!frag) return;
 
-		
-
-		
 		mHandle = glCreateProgram();
 		glAttachShader(mHandle, vert.handle());
 		glAttachShader(mHandle, frag.handle());
@@ -619,7 +605,7 @@ namespace vulpengine::experimental {
 				VP_LOG_ERROR("Program link error in {}: {}", info.path, infoLog);
 		}
 
-		glObjectLabel(GL_PROGRAM, mHandle, -1, info.path);
+		glObjectLabel(GL_PROGRAM, mHandle, info.path.size(), info.path.data());
 
 		if (!linkStatus) {
 			glDeleteProgram(mHandle);
@@ -661,10 +647,7 @@ namespace vulpengine::experimental {
 	}
 
 	ShaderProgram::~ShaderProgram() noexcept {
-		if (mHandle) {
-			VP_LOG_TRACE("Destroyed shader program: {}", mHandle);
-			glDeleteProgram(mHandle);
-		}
+		if (mHandle) glDeleteProgram(mHandle);
 	}
 
 	void ShaderProgram::bind() const {

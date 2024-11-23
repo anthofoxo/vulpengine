@@ -192,7 +192,7 @@ namespace vulpengine::experimental {
 	class ShaderProgram final {
 	public:
 		struct CreateInfo final {
-			char const* path = nullptr;
+			std::string_view path;
 		};
 
 		struct Message final {
