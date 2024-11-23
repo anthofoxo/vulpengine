@@ -195,6 +195,12 @@ namespace vulpengine::experimental {
 			char const* path = nullptr;
 		};
 
+		struct Message final {
+			std::string message;
+			std::string source;
+			int line = 0;
+		};
+
 		ShaderProgram() noexcept = default;
 		ShaderProgram(CreateInfo const& info);
 		ShaderProgram(ShaderProgram const&) = delete;
@@ -259,8 +265,10 @@ namespace vulpengine::experimental {
 		inline operator GLuint() const { return mHandle; }
 		inline bool valid() const { return mHandle; }
 		inline GLuint handle() const { return mHandle; }
+		inline std::vector<Message> const& messages() const { return mMessages; }
 	private:
 		GLuint mHandle = 0;
 		UnorderedStringMap<int> mActiveUniforms;
+		std::vector<Message> mMessages;
 	};
 }

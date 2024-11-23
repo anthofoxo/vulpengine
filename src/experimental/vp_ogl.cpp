@@ -375,13 +375,21 @@ namespace vulpengine::experimental {
 #include <regex>
 #include <expected>
 #include <sstream>
+#include <filesystem>
 
 namespace vulpengine::experimental {
 	namespace {
-		std::expected<std::string, std::string> preprocess(std::filesystem::path const& path, std::string_view inject) {
+		std::string path_to_string(std::filesystem::path const& path) {
+			auto u8string = path.generic_u8string();
+			return std::string(reinterpret_cast<char const*>(u8string.data()), (u8string.cend() - u8string.cbegin()));
+		}
+
+		std::expected<std::string, ShaderProgram::Message> preprocess(std::filesystem::path const& path, std::string_view inject, std::vector<std::string>& sourceMap) {
 			// Read initial file
 			auto optContent = read_file_string(path);
-			if (!optContent) return std::unexpected("Failed to read file");
+			if (!optContent) return std::unexpected(ShaderProgram::Message{ "cannot open source file", path_to_string(path), 0 });
+
+			sourceMap.emplace_back(path_to_string(path)); // source 0
 
 			// Make writable streams
 			std::istringstream iss(*optContent);
@@ -396,6 +404,7 @@ namespace vulpengine::experimental {
 				// #inject
 				if (std::regex_search(line, std::regex("\\s*#\\s*inject"))) {
 					oss << std::format("#line 1 {}\n", sourceIndex++); // Line 1 of new source
+					sourceMap.emplace_back("<inline>");
 					oss << inject << '\n';
 					oss << std::format("#line {} 0\n", currentLine + 1); // Next line of current source
 				}
@@ -405,10 +414,11 @@ namespace vulpengine::experimental {
 						std::string const includePath = matches[1].str();
 
 						oss << std::format("#line 1 {}\n", sourceIndex++); // Line 1 of new source
+						sourceMap.emplace_back(path_to_string(path.parent_path() / includePath));
 						
 						// Open file relative to current source then write the contents into the output stream
 						auto optInclude = read_file_string(path.parent_path() / includePath);
-						if (!optInclude) return std::unexpected(std::format("Cannot open source file {} at line {}", includePath, currentLine));
+						if (!optInclude) return std::unexpected(ShaderProgram::Message{ "cannot open source file", path_to_string(path.parent_path() / includePath), currentLine});
 						oss << *optInclude << '\n';
 
 						oss << std::format("#line {} 0\n", currentLine + 1);  // Next line of current source
@@ -424,12 +434,42 @@ namespace vulpengine::experimental {
 			return oss.str();
 		}
 
+		std::regex get_pattern() {
+			char const* kPatternAti = "([0-9]*):([0-9]+)\\s*:\\s*(.*)$";
+			char const* kPatternNvidia = "([0-9]*)\\(([0-9]+)\\)\\s*:\\s*(.*)$";
+
+			if (std::string_view(reinterpret_cast<char const*>(glGetString(GL_VENDOR))) == "ATI Technologies Inc.") return std::regex(kPatternAti);
+			if (std::string_view(reinterpret_cast<char const*>(glGetString(GL_VENDOR))) == "NVIDIA Corporation") return std::regex(kPatternNvidia);
+			return std::regex(kPatternNvidia); // If not explicitly supported, assume nvidia style
+		}
+
+		std::vector<ShaderProgram::Message> format_info_log(std::stringstream message, std::vector<std::string> const& sourceMap) {
+			std::regex const pattern = get_pattern();
+			std::vector<ShaderProgram::Message> messages;
+
+			for (std::string line; std::getline(message, line);) {
+				if (std::smatch match; std::regex_search(line, match, pattern)) {
+					int sourceNumber = 0;
+					int lineNumber = 0;
+					std::string const message = match[3].str();
+
+					try { sourceNumber = std::stoi(match[1].str()); } catch(std::invalid_argument const&) {}
+					try { lineNumber = std::stoi(match[2].str()); } catch (std::invalid_argument const&) {}
+
+					messages.emplace_back(message, sourceMap.at(sourceNumber), lineNumber);
+				}
+			}
+
+			return messages;
+		}
+
 		class Shader final {
 		public:
 			struct CreateInfo {
 				GLenum type = GL_NONE;
 				std::string_view source;
 				std::string_view label;
+				std::vector<std::string>& sourceMap;
 			};
 
 			constexpr Shader() noexcept = default;
@@ -453,13 +493,17 @@ namespace vulpengine::experimental {
 
 				if (infoLogLength > 0) {
 					std::string infoLog;
-					infoLog.resize(infoLogLength);
+					infoLog.resize(infoLogLength - 1);
 					glGetShaderInfoLog(mHandle, infoLogLength, nullptr, infoLog.data());
 
 					if (compileStatus)
 						VP_LOG_INFO("Shader info log in {}: {}", info.label, infoLog);
 					else
 						VP_LOG_ERROR("Shader compile error in {}: {}", info.label, infoLog);
+
+					for (auto const& message : format_info_log(std::stringstream(infoLog), info.sourceMap)) {
+						mMessages.emplace_back(message);
+					}
 				}
 
 				if (!info.label.empty())
@@ -468,7 +512,7 @@ namespace vulpengine::experimental {
 				VP_LOG_TRACE("Created shader: {}", mHandle);
 
 				if (!compileStatus) {
-					Shader::~Shader();
+					glDeleteShader(mHandle);
 					mHandle = 0;
 				}
 			}
@@ -478,6 +522,7 @@ namespace vulpengine::experimental {
 			inline Shader(Shader&& other) noexcept { *this = std::move(other); }
 			inline Shader& operator=(Shader&& other) noexcept {
 				std::swap(mHandle, other.mHandle);
+				std::swap(mMessages, other.mMessages);
 				return *this;
 			}
 
@@ -491,25 +536,29 @@ namespace vulpengine::experimental {
 			inline explicit operator bool() const { return mHandle; }
 			inline bool valid() const { return mHandle; }
 			inline GLuint handle() const { return mHandle; }
+			inline std::vector<ShaderProgram::Message> const& messages() const { return mMessages; }
 		private:
 			GLuint mHandle = 0;
+			std::vector<ShaderProgram::Message> mMessages;
 		};
 	}
 
 	ShaderProgram::ShaderProgram(CreateInfo const& info) {
 		assert(info.path != nullptr);
 
-		auto vertSource = preprocess(info.path, "#define VERT");
+		std::vector<std::string> sourceMapVert;
+		auto vertSource = preprocess(info.path, "#define VERT", sourceMapVert);
 
 		if (!vertSource) {
-			VP_LOG_ERROR("{}", vertSource.error());
+			VP_LOG_ERROR("{}", vertSource.error().message);
 			return;
 		}
 
-		auto fragSource = preprocess(info.path, "#define FRAG");
+		std::vector<std::string> sourceMapFrag;
+		auto fragSource = preprocess(info.path, "#define FRAG", sourceMapFrag);
 
 		if (!fragSource) {
-			VP_LOG_ERROR("{}", fragSource.error());
+			VP_LOG_ERROR("{}", fragSource.error().message);
 			return;
 		}
 
@@ -519,19 +568,33 @@ namespace vulpengine::experimental {
 		Shader vert = { {
 			.type = GL_VERTEX_SHADER,
 			.source = *vertSource,
-			.label = vertLabel
+			.label = vertLabel,
+			.sourceMap = sourceMapVert,
 		} };
+
+		for (auto& message : vert.messages()) {
+			mMessages.emplace_back(message);
+		}
 
 		if (!vert) return;
 
 		Shader frag = { {
 			.type = GL_FRAGMENT_SHADER,
 			.source = *fragSource,
-			.label = fragLabel
+			.label = fragLabel,
+			.sourceMap = sourceMapFrag,
 		} };
+
+		for (auto& message : frag.messages()) {
+			mMessages.emplace_back(message);
+		}
+
 
 		if (!frag) return;
 
+		
+
+		
 		mHandle = glCreateProgram();
 		glAttachShader(mHandle, vert.handle());
 		glAttachShader(mHandle, frag.handle());
@@ -593,6 +656,7 @@ namespace vulpengine::experimental {
 	ShaderProgram& ShaderProgram::operator=(ShaderProgram&& other) noexcept {
 		std::swap(mHandle, other.mHandle);
 		std::swap(mActiveUniforms, other.mActiveUniforms);
+		std::swap(mMessages, other.mMessages);
 		return *this;
 	}
 
