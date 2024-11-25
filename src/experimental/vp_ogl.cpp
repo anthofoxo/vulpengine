@@ -427,8 +427,9 @@ namespace vulpengine::experimental {
 			char const* kPatternAti = "([0-9]*):([0-9]+)\\s*:\\s*(.*)$";
 			char const* kPatternNvidia = "([0-9]*)\\(([0-9]+)\\)\\s*:\\s*(.*)$";
 
-			if (std::string_view(reinterpret_cast<char const*>(glGetString(GL_VENDOR))) == "ATI Technologies Inc.") return std::regex(kPatternAti);
 			if (std::string_view(reinterpret_cast<char const*>(glGetString(GL_VENDOR))) == "NVIDIA Corporation") return std::regex(kPatternNvidia);
+			if (std::string_view(reinterpret_cast<char const*>(glGetString(GL_VENDOR))) == "ATI Technologies Inc.") return std::regex(kPatternAti);
+			if (std::string_view(reinterpret_cast<char const*>(glGetString(GL_VENDOR))) == "Intel") return std::regex(kPatternAti);
 			return std::regex(kPatternNvidia); // If not explicitly supported, assume nvidia style
 		}
 

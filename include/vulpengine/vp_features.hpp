@@ -36,4 +36,8 @@ Todo: Refactor feature macros:
 #	define VP_LIB_GLAD
 #endif
 
+#if __has_include(<imgui.h>)
+#	define VP_LIB_IMGUI
+#endif
+
 #endif // __has_include
