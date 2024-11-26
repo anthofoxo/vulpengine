@@ -11,7 +11,7 @@ namespace vulpengine::experimental {
 	namespace {
 		int count_matches_in_regex(std::string const& str, std::string const& aPattern) {
 			try {
-				std::regex const pattern(aPattern);
+				std::regex const pattern(aPattern, std::regex_constants::icase);
 				auto const matchBegin = std::sregex_iterator(str.begin(), str.end(), pattern);
 				auto const matchEnd = std::sregex_iterator();
 				return std::distance(matchBegin, matchEnd);
@@ -45,54 +45,42 @@ namespace vulpengine::experimental {
 		}
 
 		// Ranks all the commands via `fuzzy_score`. The vector is then sorted using this value
-		void rank_commands(std::string const& aFilter, CommandPalette::CommandSort& aCommandSorted, CommandPalette::CommandStore const& aCommandStore) {
-			for (auto& [cmdIdx, score] : aCommandSorted) {
-				score = fuzzy_score(aFilter, aCommandStore.at(cmdIdx).detail);
+		void rank_commands(std::string const& aFilter, decltype(CommandPalette::mCommands)& aCommands) {
+			for (auto& [pCommand, score] : aCommands) {
+				score = fuzzy_score(aFilter, pCommand->detail);
 			}
 
-			std::sort(aCommandSorted.begin(), aCommandSorted.end(), [](auto const& a, auto const& b) {
-				return a.second > b.second;
+			std::sort(aCommands.begin(), aCommands.end(), [](auto const& a, auto const& b) {
+				if (a.second == b.second) return a.first->detail.size() < b.first->detail.size();
+				else return a.second > b.second;
 			});
-		}
-
-		// Draw the menu item gui
-		void command_gui(CommandPalette::Command& cmd, CommandPalette& aPalette, char const* name = nullptr) {
-			char const* shortcutString = cmd.shortcut ? ImGui::GetKeyChordName(cmd.shortcut) : nullptr;
-			bool selectedCopy = cmd.selected; // Intentially copy
-
-			if (ImGui::MenuItem(name ? name : cmd.detail.c_str(), shortcutString, &selectedCopy, cmd.enabled)) {
-				aPalette.mVisible = false;
-				if (cmd.stateSwap) cmd.selected ^= true;
-				cmd.onAction();
-			}
-		}
-
-		void push_menu(CommandPalette& aPalette, std::string str, CommandPalette::Command& cmd) {
-			size_t pos = str.find_first_of('/');
-
-			if (pos == std::string::npos) {
-				command_gui(cmd, aPalette, str.substr(pos + 1).c_str());
-			}
-			else {
-				if (ImGui::BeginMenu(str.substr(0, pos).c_str())) {
-					push_menu(aPalette, str.substr(pos + 1), cmd);
-					ImGui::EndMenu();
-				}
-			}
 		}
 	}
 
-	CommandPalette::Command& CommandPalette::command_get(std::string const& cmdId) {
-		return mCommandStore[mCommandMap.at(cmdId)];
+	void CommandPalette::Command::draw_gui(CommandPalette& aPalette, char const* aName, int aScore) {
+		char const* shortcutString = shortcut ? ImGui::GetKeyChordName(shortcut) : nullptr;
+		bool selectedCopy = showCheckbox();
+
+		if (ImGui::MenuItem(aName ? aName : detail.c_str(), shortcutString, &selectedCopy, enabled)) {
+			trigger(aPalette);
+		}
+
+		if (aScore != -1) {
+			ImGui::SameLine();
+			ImGui::Text("%d", aScore);
+		}
+	}
+
+	bool CommandPalette::Command::trigger(CommandPalette& aPalette) {
+		if (!enabled) return false;
+		aPalette.mVisible = false;
+		onAction();
+		return true;
 	}
 
 	// If enabled, when the menu items are pushed
-	// They will be pushed in the order commands are registered
-	void CommandPalette::command_register(std::string const& cmdId, Command&& cmd) {
-		size_t const cmdIdx = mCommandStore.size();
-		mCommandMap[cmdId] = cmdIdx;
-		mCommandStorted.emplace_back(cmdIdx, 0);
-		mCommandStore.push_back(std::move(cmd));
+	void CommandPalette::command_register(Command* aCommand) {
+		mCommands.emplace_back(aCommand, 0);
 	}
 
 	void CommandPalette::render() {
@@ -102,32 +90,16 @@ namespace vulpengine::experimental {
 		if (ImGui::IsKeyChordPressed(ImGuiKey_Escape))
 			mVisible = false;
 
-		if (mMenuMenuBarCarat) {
-			if (ImGui::BeginMainMenuBar()) {
-				if (ImGui::MenuItem(">")) mVisible = true;
-				ImGui::EndMainMenuBar();
-			}
-		}
-
 		// Check global shortcuts
-		for (auto& command : mCommandStore) {
-			command.onUpdate(command);
+		for (auto& [pCommand, score] : mCommands) {
+			pCommand->onUpdate(*pCommand);
 
 			if (mRespondShortcuts) {
-				if (command.enabled && command.shortcut) {
-					if (ImGui::GetShortcutRoutingData(command.shortcut)->RoutingCurr == ImGuiKeyOwner_NoOwner && ImGui::IsKeyChordPressed(command.shortcut)) {
+				if (pCommand->enabled && pCommand->shortcut) {
+					if (ImGui::GetShortcutRoutingData(pCommand->shortcut)->RoutingCurr == ImGuiKeyOwner_NoOwner && ImGui::IsKeyChordPressed(pCommand->shortcut)) {
 						mVisible = false;
-						command.onAction();
-						break;
-					}
-				}
-			}
-			
-			if (mInsertMenuBarItems) {
-				if (!command.path.empty()) {
-					if (ImGui::BeginMainMenuBar()) {
-						push_menu(*this, command.path, command);
-						ImGui::EndMainMenuBar();
+						pCommand->onAction();
+						continue;
 					}
 				}
 			}
@@ -152,6 +124,14 @@ namespace vulpengine::experimental {
 
 		if (!ImGui::IsWindowFocused(ImGuiFocusedFlags_ChildWindows)) mVisible = false;
 
+		bool shouldRankCommands = false;
+		bool shouldTriggerFirst = false;
+
+		auto onEdit = [](ImGuiInputTextCallbackData* data) -> int {
+			*reinterpret_cast<bool*>(data->UserData) = true;
+			return 0;
+		};
+
 		// Since there's no padding, we need to manually place dummy objects to pad out the text box
 		ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, { 0.0f, 0.0f });
 		ImGui::Dummy({ 0.0f, ImGui::GetStyle().WindowPadding.y });
@@ -160,11 +140,18 @@ namespace vulpengine::experimental {
 
 		// Input Box
 		ImGui::SetNextItemWidth(ImGui::GetWindowSize().x - ImGui::GetStyle().WindowPadding.x * 2.0f);
-		if (ImGui::IsWindowAppearing()) {
+		if (ImGui::IsWindowAppearing() || mAssertFilterFocus) {
+			mAssertFilterFocus = false;
 			ImGui::SetKeyboardFocusHere();
-			mFilter = "";
 		}
-		if (ImGui::InputText("##Input", &mFilter)) rank_commands(mFilter, mCommandStorted, mCommandStore);
+
+		if (ImGui::InputText("##Input", &mFilter, ImGuiInputTextFlags_AutoSelectAll | ImGuiInputTextFlags_EnterReturnsTrue | ImGuiInputTextFlags_CallbackEdit, onEdit, &shouldRankCommands)) {
+			shouldTriggerFirst = true;
+		}
+
+		if (shouldRankCommands) {
+			rank_commands(mFilter, mCommands);
+		}
 
 		// Finish manually padding
 		ImGui::Dummy({ 0.0f, ImGui::GetStyle().WindowPadding.y });
@@ -176,10 +163,14 @@ namespace vulpengine::experimental {
 		ImGui::BeginChild("SearchResults", ImVec2(0.0f, mSize.y * viewport.y), ImGuiChildFlags_NavFlattened | ImGuiChildFlags_AlwaysUseWindowPadding);
 
 		int i = 0;
-		for (auto& [cmdIdx, fuzzyScore] : mCommandStorted) {
-			Command& cmd = mCommandStore.at(cmdIdx);
+		for (auto& [pCommand, fuzzyScore] : mCommands) {
+			if (i == 0 && shouldTriggerFirst) { 
+				if (pCommand->trigger(*this)) break;
+				else mAssertFilterFocus = true;
+			}
+
 			if (mUseAltBindings && i < 10) ImGui::SetNextItemShortcut(ImGuiMod_Alt | (ImGuiKey_1 + i), ImGuiInputFlags_RouteAlways);
-			command_gui(cmd, *this, nullptr);
+			pCommand->draw_gui(*this, nullptr, mShowScores ? fuzzyScore : -1);
 			++i;
 		}
 
