@@ -57,11 +57,15 @@ namespace vulpengine::experimental {
 		}
 	}
 
-	void CommandPalette::Command::draw_gui(CommandPalette& aPalette, char const* aName, int aScore) {
-		char const* shortcutString = shortcut ? ImGui::GetKeyChordName(shortcut) : nullptr;
+	void CommandPalette::Command::draw_gui(CommandPalette& aPalette, char const* aName, int aScore, ImGuiKeyChord aChord) {
+		std::string shortcutString;
+		if (aChord) shortcutString += ImGui::GetKeyChordName(aChord);
+		if (!shortcutString.empty() && shortcut) shortcutString += " | ";
+		if (shortcut) shortcutString += ImGui::GetKeyChordName(shortcut);
+
 		bool selectedCopy = showCheckbox();
 
-		if (ImGui::MenuItem(aName ? aName : detail.c_str(), shortcutString, &selectedCopy, enabled)) {
+		if (ImGui::MenuItem(aName ? aName : detail.c_str(), shortcutString.empty() ? nullptr : shortcutString.c_str(), &selectedCopy, enabled)) {
 			trigger(aPalette);
 		}
 
@@ -169,8 +173,12 @@ namespace vulpengine::experimental {
 				else mAssertFilterFocus = true;
 			}
 
-			if (mUseAltBindings && i < 10) ImGui::SetNextItemShortcut(ImGuiMod_Alt | (ImGuiKey_1 + i), ImGuiInputFlags_RouteAlways);
-			pCommand->draw_gui(*this, nullptr, mShowScores ? fuzzyScore : -1);
+			ImGuiKeyChord altChord = 0;
+			if (mUseAltBindings && i < mNumAltBindings) {
+				altChord = ImGuiMod_Alt | (ImGuiKey_1 + i);
+				ImGui::SetNextItemShortcut(altChord, ImGuiInputFlags_RouteAlways);
+			}
+			pCommand->draw_gui(*this, nullptr, mShowScores ? fuzzyScore : -1, altChord);
 			++i;
 		}
 

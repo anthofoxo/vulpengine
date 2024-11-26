@@ -30,7 +30,7 @@ namespace vulpengine::experimental {
 			// Performed every frame
 			std::function<void(Command&)> onUpdate = [](Command&) {};
 
-			void draw_gui(CommandPalette& aPalette, char const* aName = nullptr, int aScore = -1);
+			void draw_gui(CommandPalette& aPalette, char const* aName = nullptr, int aScore = -1, ImGuiKeyChord aChord = 0);
 			bool trigger(CommandPalette& aPalette);
 		};
 	public:
@@ -50,9 +50,10 @@ namespace vulpengine::experimental {
 		// If true, will check for the associated keybinds
 		bool mRespondShortcuts = true;
 
-		// When the command palette is open, the first 9 items
-		// will have Alt+1 through Alt+9 bound to them
+		// When the command palette is open, the first 3 items
+		// will have Alt+1 through Alt+3 bound to them
 		bool mUseAltBindings = true;
+		int mNumAltBindings = 3;
 
 		// If the command palette is visble
 		bool mVisible = false;
